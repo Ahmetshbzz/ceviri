@@ -16,226 +16,249 @@ struct TranslationView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Üst bölüm - dil seçimi
-                ZStack {
-                    // Gradient arkaplan
-                    LinearGradient(gradient: Gradient(colors: topGradientColors), 
-                                  startPoint: .topLeading, 
-                                  endPoint: .bottomTrailing)
-                        .ignoresSafeArea(edges: .top)
-                    
-                    VStack(spacing: 16) {
-                        HStack(alignment: .center) {
-                            // Kaynak dil göstergesi
-                            Button {
-                                showSourceLanguageOptions = true
-                            } label: {
-                                HStack {
-                                    if viewModel.detectedLanguage.isEmpty && viewModel.selectedSourceLanguage.code == "auto" {
-                                        Text("Otomatik")
-                                    } else if viewModel.selectedSourceLanguage.code != "auto" {
-                                        Text(viewModel.selectedSourceLanguage.name)
-                                    } else {
-                                        Text(viewModel.getDetectedLanguageName())
+            ZStack {
+                // Ana içerik
+                VStack(spacing: 0) {
+                    // Üst bölüm - dil seçimi
+                    ZStack {
+                        // Gradient arkaplan
+                        LinearGradient(gradient: Gradient(colors: topGradientColors), 
+                                      startPoint: .topLeading, 
+                                      endPoint: .bottomTrailing)
+                            .ignoresSafeArea(edges: .top)
+                        
+                        VStack(spacing: 16) {
+                            HStack(alignment: .center) {
+                                // Kaynak dil göstergesi
+                                Button {
+                                    showSourceLanguageOptions = true
+                                    // Klavyeyi kapat
+                                    isInputFocused = false
+                                } label: {
+                                    HStack {
+                                        if viewModel.detectedLanguage.isEmpty && viewModel.selectedSourceLanguage.code == "auto" {
+                                            Text("Otomatik")
+                                        } else if viewModel.selectedSourceLanguage.code != "auto" {
+                                            Text(viewModel.selectedSourceLanguage.name)
+                                        } else {
+                                            Text(viewModel.getDetectedLanguageName())
+                                        }
+                                        Image(systemName: "chevron.down")
+                                            .font(.caption)
                                     }
-                                    Image(systemName: "chevron.down")
-                                        .font(.caption)
-                                }
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 12)
-                                .background(Color.white.opacity(0.2))
-                                .cornerRadius(16)
-                            }
-                            
-                            Spacer()
-                            
-                            // Dil değiştirme butonu
-                            Button {
-                                Task {
-                                    await viewModel.swapLanguages()
-                                }
-                            } label: {
-                                Image(systemName: "arrow.left.arrow.right")
-                                    .font(.system(size: 18, weight: .medium))
+                                    .font(.headline)
                                     .foregroundColor(.white)
-                                    .padding(10)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
                                     .background(Color.white.opacity(0.2))
-                                    .clipShape(Circle())
-                            }
-                            .disabled(viewModel.translatedText.isEmpty || viewModel.selectedSourceLanguage.code == "auto")
-                            .opacity(viewModel.translatedText.isEmpty || viewModel.selectedSourceLanguage.code == "auto" ? 0.5 : 1)
-                            
-                            Spacer()
-                            
-                            // Hedef dil seçici
-                            Button {
-                                showTargetLanguageOptions = true
-                            } label: {
-                                HStack {
-                                    Text(viewModel.selectedTargetLanguage.name)
-                                    Image(systemName: "chevron.down")
-                                        .font(.caption)
+                                    .cornerRadius(16)
                                 }
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 12)
-                                .background(Color.white.opacity(0.2))
-                                .cornerRadius(16)
+                                
+                                Spacer()
+                                
+                                // Dil değiştirme butonu
+                                Button {
+                                    // Klavyeyi kapat
+                                    isInputFocused = false
+                                    Task {
+                                        await viewModel.swapLanguages()
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.left.arrow.right")
+                                        .font(.system(size: 18, weight: .medium))
+                                        .foregroundColor(.white)
+                                        .padding(10)
+                                        .background(Color.white.opacity(0.2))
+                                        .clipShape(Circle())
+                                }
+                                .disabled(viewModel.translatedText.isEmpty || viewModel.selectedSourceLanguage.code == "auto")
+                                .opacity(viewModel.translatedText.isEmpty || viewModel.selectedSourceLanguage.code == "auto" ? 0.5 : 1)
+                                
+                                Spacer()
+                                
+                                // Hedef dil seçici
+                                Button {
+                                    showTargetLanguageOptions = true
+                                    // Klavyeyi kapat
+                                    isInputFocused = false
+                                } label: {
+                                    HStack {
+                                        Text(viewModel.selectedTargetLanguage.name)
+                                        Image(systemName: "chevron.down")
+                                            .font(.caption)
+                                    }
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(Color.white.opacity(0.2))
+                                    .cornerRadius(16)
+                                }
                             }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
                         }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+                        .padding(.bottom, 20)
                     }
-                    .padding(.bottom, 20)
-                }
-                .frame(height: 120)
-                
-                // Alt bölüm - çeviri alanı
-                ZStack {
-                    Color(UIColor.systemBackground)
+                    .frame(height: 120)
                     
-                    VStack(spacing: 0) {
-                        // Kaynak metin alanı
-                        TranslateAreaTextEditor(
-                            text: $viewModel.inputText,
-                            placeholder: "Çevrilecek metni girin",
-                            isEditable: true,
-                            maxHeight: 120,
-                            onCommit: {
-                                if viewModel.canTranslate() {
+                    // Alt bölüm - çeviri alanı
+                    ZStack {
+                        Color(UIColor.systemBackground)
+                        
+                        VStack(spacing: 0) {
+                            // Kaynak metin alanı
+                            TranslateAreaTextEditor(
+                                text: $viewModel.inputText,
+                                placeholder: "Çevrilecek metni girin",
+                                isEditable: true,
+                                maxHeight: 120,
+                                onCommit: {
+                                    if viewModel.canTranslate() {
+                                        Task {
+                                            await viewModel.translate()
+                                        }
+                                    }
+                                }
+                            )
+                            .focused($isInputFocused)
+                            .padding(.horizontal)
+                            .padding(.top, 16)
+                            .frame(height: 140)
+                            
+                            Divider()
+                                .padding(.horizontal, 30)
+                                .padding(.vertical, 16)
+                            
+                            // Orta bölüm
+                            HStack {
+                                if !viewModel.detectedLanguage.isEmpty && !viewModel.inputText.isEmpty && viewModel.selectedSourceLanguage.code == "auto" {
+                                    Label("Algılanan: \(viewModel.getDetectedLanguageName())", systemImage: "globe")
+                                        .font(.footnote)
+                                        .foregroundColor(.secondary)
+                                        .padding(.vertical, 4)
+                                        .padding(.horizontal, 8)
+                                        .background(Color.secondary.opacity(0.1))
+                                        .cornerRadius(8)
+                                }
+                                
+                                Spacer()
+                                
+                                Button {
+                                    isInputFocused = false
                                     Task {
                                         await viewModel.translate()
                                     }
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Text("Çevir")
+                                        Image(systemName: "arrow.right")
+                                    }
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 16)
+                                    .background(viewModel.canTranslate() ? Color.blue : Color.gray.opacity(0.3))
+                                    .foregroundColor(.white)
+                                    .cornerRadius(16)
+                                    .font(.headline)
                                 }
+                                .disabled(!viewModel.canTranslate())
                             }
-                        )
-                        .focused($isInputFocused)
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                        .frame(height: 140)
-                        
-                        Divider()
-                            .padding(.horizontal, 30)
-                            .padding(.vertical, 16)
-                        
-                        // Orta bölüm
-                        HStack {
-                            if !viewModel.detectedLanguage.isEmpty && !viewModel.inputText.isEmpty && viewModel.selectedSourceLanguage.code == "auto" {
-                                Label("Algılanan: \(viewModel.getDetectedLanguageName())", systemImage: "globe")
-                                    .font(.footnote)
-                                    .foregroundColor(.secondary)
-                                    .padding(.vertical, 4)
-                                    .padding(.horizontal, 8)
-                                    .background(Color.secondary.opacity(0.1))
-                                    .cornerRadius(8)
+                            .padding(.horizontal)
+                            
+                            Divider()
+                                .padding(.horizontal, 30)
+                                .padding(.vertical, 16)
+                            
+                            // Çeviri sonucu alanı
+                            VStack {
+                                TranslateAreaTextEditor(
+                                    text: $viewModel.translatedText,
+                                    placeholder: "Çeviri burada görünecek",
+                                    isEditable: false,
+                                    maxHeight: 120
+                                )
+                                .padding(.horizontal)
+                                .frame(height: 140)
+                                
+                                // İşlem butonları
+                                if !viewModel.translatedText.isEmpty {
+                                    HStack(spacing: 16) {
+                                        Spacer()
+                                        
+                                        // Kopyala butonu
+                                        Button {
+                                            UIPasteboard.general.string = viewModel.translatedText
+                                            let generator = UINotificationFeedbackGenerator()
+                                            generator.notificationOccurred(.success)
+                                        } label: {
+                                            Image(systemName: "doc.on.doc")
+                                                .padding(12)
+                                                .background(Color.blue.opacity(0.1))
+                                                .clipShape(Circle())
+                                                .foregroundColor(.blue)
+                                        }
+                                        
+                                        // Paylaş butonu
+                                        Button {
+                                            isInputFocused = false
+                                            let activityVC = UIActivityViewController(
+                                                activityItems: [viewModel.translatedText],
+                                                applicationActivities: nil
+                                            )
+                                            
+                                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                                               let rootViewController = windowScene.windows.first?.rootViewController {
+                                                rootViewController.present(activityVC, animated: true)
+                                            }
+                                        } label: {
+                                            Image(systemName: "square.and.arrow.up")
+                                                .padding(12)
+                                                .background(Color.blue.opacity(0.1))
+                                                .clipShape(Circle())
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 8)
+                                }
                             }
                             
                             Spacer()
-                            
-                            Button {
-                                isInputFocused = false
-                                Task {
-                                    await viewModel.translate()
-                                }
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Text("Çevir")
-                                    Image(systemName: "arrow.right")
-                                }
-                                .padding(.vertical, 8)
-                                .padding(.horizontal, 16)
-                                .background(viewModel.canTranslate() ? Color.blue : Color.gray.opacity(0.3))
-                                .foregroundColor(.white)
-                                .cornerRadius(16)
-                                .font(.headline)
-                            }
-                            .disabled(!viewModel.canTranslate())
                         }
-                        .padding(.horizontal)
-                        
-                        Divider()
-                            .padding(.horizontal, 30)
-                            .padding(.vertical, 16)
-                        
-                        // Çeviri sonucu alanı
-                        VStack {
-                            TranslateAreaTextEditor(
-                                text: $viewModel.translatedText,
-                                placeholder: "Çeviri burada görünecek",
-                                isEditable: false,
-                                maxHeight: 120
+                    }
+                    
+                    // Debug mesajı (geliştirme aşamasında)
+                    if !viewModel.debugMessage.isEmpty {
+                        Text(viewModel.debugMessage)
+                            .font(.footnote)
+                            .padding(12)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                viewModel.debugMessage.contains("⚠️") || viewModel.debugMessage.contains("‼️") 
+                                    ? Color.red.opacity(0.15) 
+                                    : Color.gray.opacity(0.15)
                             )
+                            .cornerRadius(8)
                             .padding(.horizontal)
-                            .frame(height: 140)
-                            
-                            // İşlem butonları
-                            if !viewModel.translatedText.isEmpty {
-                                HStack(spacing: 16) {
-                                    Spacer()
-                                    
-                                    // Kopyala butonu
-                                    Button {
-                                        UIPasteboard.general.string = viewModel.translatedText
-                                        let generator = UINotificationFeedbackGenerator()
-                                        generator.notificationOccurred(.success)
-                                    } label: {
-                                        Image(systemName: "doc.on.doc")
-                                            .padding(12)
-                                            .background(Color.blue.opacity(0.1))
-                                            .clipShape(Circle())
-                                            .foregroundColor(.blue)
-                                    }
-                                    
-                                    // Paylaş butonu
-                                    Button {
-                                        let activityVC = UIActivityViewController(
-                                            activityItems: [viewModel.translatedText],
-                                            applicationActivities: nil
-                                        )
-                                        
-                                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                                           let rootViewController = windowScene.windows.first?.rootViewController {
-                                            rootViewController.present(activityVC, animated: true)
-                                        }
-                                    } label: {
-                                        Image(systemName: "square.and.arrow.up")
-                                            .padding(12)
-                                            .background(Color.blue.opacity(0.1))
-                                            .clipShape(Circle())
-                                            .foregroundColor(.blue)
-                                    }
-                                }
-                                .padding(.horizontal)
-                                .padding(.vertical, 8)
-                            }
-                        }
-                        
-                        Spacer()
+                            .padding(.bottom, 4)
                     }
                 }
                 
-                // Debug mesajı (geliştirme aşamasında)
-                if !viewModel.debugMessage.isEmpty {
-                    Text(viewModel.debugMessage)
-                        .font(.footnote)
-                        .padding(12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            viewModel.debugMessage.contains("⚠️") || viewModel.debugMessage.contains("‼️") 
-                                ? Color.red.opacity(0.15) 
-                                : Color.gray.opacity(0.15)
-                        )
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                        .padding(.bottom, 4)
+                // Klavyeyi kapatmak için arka plan katmanı
+                if isInputFocused {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            isInputFocused = false
+                        }
                 }
             }
             .navigationTitle("Ceviri")
             .navigationBarTitleDisplayMode(.inline)
+            .onTapGesture {
+                // Ekrandaki herhangi bir yere tıklandığında klavyeyi kapat
+                isInputFocused = false
+            }
             .sheet(isPresented: $showSourceLanguageOptions) {
                 LanguageSelectionView(
                     selectedLanguage: $viewModel.selectedSourceLanguage,
