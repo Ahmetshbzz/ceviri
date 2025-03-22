@@ -245,28 +245,6 @@ struct TranslationView: View {
             }
             .navigationTitle("Ceviri")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        Button {
-                            if let url = URL(string: "https://makersuite.google.com/app/apikey") {
-                                UIApplication.shared.open(url)
-                            }
-                        } label: {
-                            Label("API Anahtarı Al", systemImage: "key.fill")
-                        }
-                        
-                        Button {
-                            isInputFocused = false
-                            viewModel.clearText()
-                        } label: {
-                            Label("Temizle", systemImage: "trash")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                }
-            }
             .sheet(isPresented: $showLanguageOptions) {
                 LanguageSelectionView(
                     selectedLanguage: $viewModel.selectedTargetLanguage,
@@ -296,20 +274,6 @@ struct TranslationView: View {
                         .cornerRadius(16)
                     }
                     .transition(.opacity)
-                }
-                
-                // Dil algılama göstergesi
-                if case .detecting = viewModel.state {
-                    VStack {
-                        Text("Dil algılanıyor...")
-                            .font(.caption)
-                            .padding(8)
-                            .background(Color.black.opacity(0.7))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .padding(.top, 100)
-                    }
-                    .transition(.scale.combined(with: .opacity))
                 }
                 
                 // Hata mesajı
