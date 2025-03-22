@@ -104,7 +104,7 @@ struct TranslationView: View {
                             text: $viewModel.inputText,
                             placeholder: "Çevrilecek metni girin",
                             isEditable: true,
-                            maxHeight: 180,
+                            maxHeight: 120,
                             onCommit: {
                                 if viewModel.canTranslate() {
                                     Task {
@@ -116,6 +116,7 @@ struct TranslationView: View {
                         .focused($isInputFocused)
                         .padding(.horizontal)
                         .padding(.top, 16)
+                        .frame(height: 140)
                         
                         Divider()
                             .padding(.horizontal, 30)
@@ -166,9 +167,10 @@ struct TranslationView: View {
                                 text: $viewModel.translatedText,
                                 placeholder: "Çeviri burada görünecek",
                                 isEditable: false,
-                                maxHeight: 180
+                                maxHeight: 120
                             )
                             .padding(.horizontal)
+                            .frame(height: 140)
                             
                             // İşlem butonları
                             if !viewModel.translatedText.isEmpty {

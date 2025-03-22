@@ -30,7 +30,7 @@ struct ModernTextEditor: View {
                 .tint(.blue)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .frame(minHeight: 80, maxHeight: maxHeight)
+                .frame(height: maxHeight)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
                         .fill(isEditable ? backgroundColor : Color.clear)
@@ -126,6 +126,7 @@ struct TranslateAreaTextEditor: View {
                 .fill(areaBackgroundColor)
                 .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
         )
+        .frame(height: maxHeight + 16) // Padding için 16 ekliyoruz
     }
 }
 
