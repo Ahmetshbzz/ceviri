@@ -9,6 +9,7 @@ struct ModernTextEditor: View {
     
     @FocusState private var isFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
+    @State private var hasPasteableContent = false
     
     private var backgroundColor: Color {
         colorScheme == .dark ? Color(UIColor.systemGray6) : Color(UIColor.systemGray6).opacity(0.5)
@@ -60,12 +61,39 @@ struct ModernTextEditor: View {
                 }
             
             if text.isEmpty {
+                // Boş placeholder
                 Text(placeholder)
                     .foregroundColor(Color.gray.opacity(0.6))
                     .font(.system(size: 16))
                     .padding(.horizontal, 16)
                     .padding(.top, 14)
                     .allowsHitTesting(false)
+                
+                // Metin boşsa ve düzenlenebilirse, yapıştır butonu göster
+                if isEditable && UIPasteboard.general.hasStrings {
+                    HStack {
+                        Spacer()
+                        Button {
+                            if let pasteString = UIPasteboard.general.string {
+                                text = pasteString
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "doc.on.clipboard.fill")
+                                    .font(.system(size: 14))
+                                Text("Yapıştır")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 12)
+                            .background(Color.blue)
+                            .cornerRadius(16)
+                        }
+                        .padding(12)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                }
             }
             
             if isEditable && isFocused && !text.isEmpty {
@@ -88,6 +116,10 @@ struct ModernTextEditor: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
+        }
+        .onAppear {
+            // Pano içeriğini kontrol et
+            hasPasteableContent = UIPasteboard.general.hasStrings
         }
     }
 }
