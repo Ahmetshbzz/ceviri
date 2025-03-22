@@ -4,7 +4,8 @@ struct TranslationView: View {
     @StateObject private var viewModel = TranslationViewModel()
     @FocusState private var isInputFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
-    @State private var showLanguageOptions = false
+    @State private var showSourceLanguageOptions = false
+    @State private var showTargetLanguageOptions = false
     
     // Üst bölüm gradient renkleri
     private var topGradientColors: [Color] {
@@ -28,12 +29,13 @@ struct TranslationView: View {
                         HStack(alignment: .center) {
                             // Kaynak dil göstergesi
                             Button {
-                                // Dil seçme modalını aç (şimdilik sadece görsel)
-                                showLanguageOptions = true
+                                showSourceLanguageOptions = true
                             } label: {
                                 HStack {
-                                    if viewModel.detectedLanguage.isEmpty {
+                                    if viewModel.detectedLanguage.isEmpty && viewModel.selectedSourceLanguage.code == "auto" {
                                         Text("Otomatik")
+                                    } else if viewModel.selectedSourceLanguage.code != "auto" {
+                                        Text(viewModel.selectedSourceLanguage.name)
                                     } else {
                                         Text(viewModel.getDetectedLanguageName())
                                     }
@@ -63,14 +65,14 @@ struct TranslationView: View {
                                     .background(Color.white.opacity(0.2))
                                     .clipShape(Circle())
                             }
-                            .disabled(viewModel.detectedLanguage.isEmpty || viewModel.translatedText.isEmpty)
-                            .opacity(viewModel.detectedLanguage.isEmpty || viewModel.translatedText.isEmpty ? 0.5 : 1)
+                            .disabled(viewModel.translatedText.isEmpty || viewModel.selectedSourceLanguage.code == "auto")
+                            .opacity(viewModel.translatedText.isEmpty || viewModel.selectedSourceLanguage.code == "auto" ? 0.5 : 1)
                             
                             Spacer()
                             
                             // Hedef dil seçici
                             Button {
-                                showLanguageOptions = true
+                                showTargetLanguageOptions = true
                             } label: {
                                 HStack {
                                     Text(viewModel.selectedTargetLanguage.name)
@@ -121,7 +123,7 @@ struct TranslationView: View {
                         
                         // Orta bölüm
                         HStack {
-                            if !viewModel.detectedLanguage.isEmpty && !viewModel.inputText.isEmpty {
+                            if !viewModel.detectedLanguage.isEmpty && !viewModel.inputText.isEmpty && viewModel.selectedSourceLanguage.code == "auto" {
                                 Label("Algılanan: \(viewModel.getDetectedLanguageName())", systemImage: "globe")
                                     .font(.footnote)
                                     .foregroundColor(.secondary)
@@ -232,10 +234,22 @@ struct TranslationView: View {
             }
             .navigationTitle("Ceviri")
             .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $showLanguageOptions) {
+            .sheet(isPresented: $showSourceLanguageOptions) {
+                LanguageSelectionView(
+                    selectedLanguage: $viewModel.selectedSourceLanguage,
+                    languages: viewModel.availableSourceLanguages,
+                    includeAutoDetect: true,
+                    title: "Kaynak Dil Seçin"
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showTargetLanguageOptions) {
                 LanguageSelectionView(
                     selectedLanguage: $viewModel.selectedTargetLanguage,
-                    languages: viewModel.availableLanguages
+                    languages: viewModel.availableLanguages,
+                    includeAutoDetect: false,
+                    title: "Hedef Dil Seçin"
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
@@ -313,6 +327,8 @@ struct TranslationView: View {
 struct LanguageSelectionView: View {
     @Binding var selectedLanguage: Language
     let languages: [Language]
+    var includeAutoDetect: Bool = false
+    var title: String = "Dil Seçin"
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
     
@@ -327,6 +343,25 @@ struct LanguageSelectionView: View {
     var body: some View {
         NavigationStack {
             List {
+                if includeAutoDetect {
+                    Button {
+                        selectedLanguage = Language(code: "auto", name: "Otomatik")
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Text("Otomatik")
+                                .foregroundColor(.primary)
+                            
+                            Spacer()
+                            
+                            if selectedLanguage.code == "auto" {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                    }
+                }
+                
                 ForEach(filteredLanguages) { language in
                     Button {
                         selectedLanguage = language
@@ -346,7 +381,7 @@ struct LanguageSelectionView: View {
                     }
                 }
             }
-            .navigationTitle("Dil Seçin")
+            .navigationTitle(title)
             .searchable(text: $searchText, prompt: "Dil Ara")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

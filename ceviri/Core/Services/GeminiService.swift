@@ -22,8 +22,8 @@ class GeminiService {
         logger.info("GeminiService başlatıldı. API Anahtarı boş mu: \(apiKey.isEmpty)")
     }
     
-    func translateText(text: String, targetLanguage: String) async throws -> String {
-        logger.info("Çeviri isteği: \(text.prefix(30))... -> \(targetLanguage)")
+    func translateText(text: String, sourceLanguage: String = "", targetLanguage: String) async throws -> String {
+        logger.info("Çeviri isteği: \(text.prefix(30))..., Kaynak: \(sourceLanguage.isEmpty ? "Otomatik" : sourceLanguage) -> Hedef: \(targetLanguage)")
         
         guard !apiKey.isEmpty else {
             logger.error("API anahtarı boş! AppConfig içinde API anahtarınızı ayarladığınızdan emin olun.")
@@ -37,7 +37,28 @@ class GeminiService {
         }
         
         // API isteği için prompt oluştur
-        let prompt = "Lütfen aşağıdaki metni \(targetLanguage) diline çevir. Sadece çeviriyi ver, hiçbir açıklama, not, detay veya kelime anlamı ekleme. Çıktı olarak sadece çevrilmiş metin olmalı:\n\n\(text)"
+        let prompt: String
+        if sourceLanguage.isEmpty {
+            prompt = """
+            Metin çeviri görevi:
+            Aşağıdaki metni \(targetLanguage) diline çevir.
+            Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme.
+            
+            Çevrilecek metin:
+            \(text)
+            """
+        } else {
+            prompt = """
+            Metin çeviri görevi:
+            Aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguage) diline çevir.
+            Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme.
+            Kaynak dil: \(sourceLanguage)
+            Hedef dil: \(targetLanguage)
+            
+            Çevrilecek metin:
+            \(text)
+            """
+        }
         logger.debug("Oluşturulan prompt: \(prompt)")
         
         // API isteği için gerekli istek gövdesini oluştur - güncel Gemini 2.0 API formatı
@@ -53,7 +74,7 @@ class GeminiService {
                 ]
             ],
             "generationConfig": [
-                "temperature": 0.2,
+                "temperature": 0.1,
                 "topP": 0.8,
                 "topK": 40
             ]

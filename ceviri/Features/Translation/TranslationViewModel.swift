@@ -18,9 +18,11 @@ class TranslationViewModel: ObservableObject {
     @Published var inputText: String = ""
     @Published var translatedText: String = ""
     @Published var detectedLanguage: String = ""
+    @Published var selectedSourceLanguage: Language = Language(code: "auto", name: "Otomatik")
     @Published var selectedTargetLanguage: Language = AppConfig.languages.first(where: { $0.code == "en" }) ?? AppConfig.languages[0]
     @Published var state: TranslationState = .idle
     @Published var availableLanguages = AppConfig.languages
+    @Published var availableSourceLanguages = AppConfig.languages
     @Published var debugMessage: String = ""
     
     private var cancellables = Set<AnyCancellable>()
@@ -39,7 +41,7 @@ class TranslationViewModel: ObservableObject {
         // Metin girişi yapıldığında dil tespiti için debounce ekle
         $inputText
             .debounce(for: 0.8, scheduler: RunLoop.main)
-            .filter { !$0.isEmpty && $0.count > 3 }
+            .filter { !$0.isEmpty && $0.count > 3 && self.selectedSourceLanguage.code == "auto" }
             .sink { [weak self] _ in
                 Task {
                     await self?.detectLanguage()
@@ -49,7 +51,7 @@ class TranslationViewModel: ObservableObject {
     }
     
     func detectLanguage() async {
-        guard !inputText.isEmpty else { return }
+        guard !inputText.isEmpty && selectedSourceLanguage.code == "auto" else { return }
         
         logger.info("Dil algılama başlatılıyor...")
         await MainActor.run {
@@ -82,8 +84,26 @@ class TranslationViewModel: ObservableObject {
         }
         
         do {
+            // Kaynak dili belirle
+            let sourceLanguage = selectedSourceLanguage.code == "auto" ? 
+                (detectedLanguage.isEmpty ? "" : availableLanguages.first(where: { $0.code == detectedLanguage })?.name ?? "") : 
+                selectedSourceLanguage.name
+            
+            // Eğer kaynak dil ve hedef dil aynıysa, direkt olarak giriş metnini döndür
+            let sourceCode = selectedSourceLanguage.code == "auto" ? detectedLanguage : selectedSourceLanguage.code
+            if !sourceCode.isEmpty && sourceCode == selectedTargetLanguage.code {
+                await MainActor.run {
+                    self.translatedText = self.inputText
+                    self.state = .success
+                    self.debugMessage = "Kaynak ve hedef dil aynı olduğu için doğrudan aktarıldı."
+                    logger.info("Kaynak ve hedef dil aynı: \(sourceCode)")
+                }
+                return
+            }
+            
             let result = try await geminiService.translateText(
                 text: inputText,
+                sourceLanguage: sourceLanguage,
                 targetLanguage: selectedTargetLanguage.name
             )
             
@@ -153,22 +173,21 @@ class TranslationViewModel: ObservableObject {
     }
     
     func swapLanguages() async {
-        guard !detectedLanguage.isEmpty else { return }
+        // Otomatik dil algılama seçiliyse ya da çeviri boşsa işlem yapılmaz
+        guard selectedSourceLanguage.code != "auto" && !translatedText.isEmpty else { return }
         
         let tempText = translatedText
-        translatedText = ""
+        let tempSourceLang = selectedSourceLanguage
         
-        if let detectedLang = availableLanguages.first(where: { $0.code == detectedLanguage }) {
-            // Önceki hedef dili kaydediyoruz, ancak şu anda kullanmıyoruz
-            // Bu değişkeni ileride genişletme durumunda tutuyorum
-            _ = selectedTargetLanguage
-            selectedTargetLanguage = detectedLang
-            
-            // Eski çevirinin hedef dilini kaynak dil yap
-            inputText = tempText
-            
-            // Yeni çeviriyi başlat
-            await translate()
-        }
+        // Kaynağı hedefle, hedefi kaynakla değiştir
+        selectedSourceLanguage = selectedTargetLanguage
+        selectedTargetLanguage = tempSourceLang
+        
+        translatedText = ""
+        inputText = tempText
+        detectedLanguage = "" // Algılanan dili sıfırla
+        
+        // Yeni çeviriyi başlat
+        await translate()
     }
 } 
