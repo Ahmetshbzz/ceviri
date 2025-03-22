@@ -244,21 +244,10 @@ struct TranslationView: View {
                     }
                 }
                 
-                // Klavyeyi kapatmak için arka plan katmanı
-                if isInputFocused {
-                    Color.clear
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            isInputFocused = false
-                        }
-                }
+                // Klavyeyi kapatmak için arka plan katmanı kodu kaldırıldı
             }
             .navigationTitle("Ceviri")
             .navigationBarTitleDisplayMode(.inline)
-            .onTapGesture {
-                // Ekrandaki herhangi bir yere tıklandığında klavyeyi kapat
-                isInputFocused = false
-            }
             .sheet(isPresented: $showSourceLanguageOptions) {
                 LanguageSelectionView(
                     selectedLanguage: $viewModel.selectedSourceLanguage,
