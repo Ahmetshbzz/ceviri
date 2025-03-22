@@ -98,38 +98,26 @@ struct TranslationView: View {
                     
                     VStack(spacing: 0) {
                         // Kaynak metin alanı
-                        ZStack(alignment: .topTrailing) {
-                            ModernTextEditor(
-                                text: $viewModel.inputText,
-                                placeholder: "Çevrilecek metni girin",
-                                isEditable: true,
-                                maxHeight: 180,
-                                onCommit: {
-                                    if viewModel.canTranslate() {
-                                        Task {
-                                            await viewModel.translate()
-                                        }
+                        TranslateAreaTextEditor(
+                            text: $viewModel.inputText,
+                            placeholder: "Çevrilecek metni girin",
+                            isEditable: true,
+                            maxHeight: 180,
+                            onCommit: {
+                                if viewModel.canTranslate() {
+                                    Task {
+                                        await viewModel.translate()
                                     }
                                 }
-                            )
-                            .padding(.top, 4)
-                            .focused($isInputFocused)
-                            
-                            if !viewModel.inputText.isEmpty {
-                                // Temizleme butonu
-                                Button {
-                                    viewModel.clearText()
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.gray)
-                                        .padding(8)
-                                }
                             }
-                        }
-                        .padding()
+                        )
+                        .focused($isInputFocused)
+                        .padding(.horizontal)
+                        .padding(.top, 16)
                         
                         Divider()
-                            .padding(.horizontal)
+                            .padding(.horizontal, 30)
+                            .padding(.vertical, 16)
                         
                         // Orta bölüm
                         HStack {
@@ -165,20 +153,20 @@ struct TranslationView: View {
                             .disabled(!viewModel.canTranslate())
                         }
                         .padding(.horizontal)
-                        .padding(.vertical, 8)
                         
                         Divider()
-                            .padding(.horizontal)
+                            .padding(.horizontal, 30)
+                            .padding(.vertical, 16)
                         
                         // Çeviri sonucu alanı
                         VStack {
-                            ModernTextEditor(
+                            TranslateAreaTextEditor(
                                 text: $viewModel.translatedText,
                                 placeholder: "Çeviri burada görünecek",
                                 isEditable: false,
                                 maxHeight: 180
                             )
-                            .padding(.top, 4)
+                            .padding(.horizontal)
                             
                             // İşlem butonları
                             if !viewModel.translatedText.isEmpty {
@@ -221,7 +209,6 @@ struct TranslationView: View {
                                 .padding(.vertical, 8)
                             }
                         }
-                        .padding(.horizontal)
                         
                         Spacer()
                     }
