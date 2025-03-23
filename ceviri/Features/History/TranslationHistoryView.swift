@@ -188,12 +188,30 @@ struct HistoryItemView: View {
     }
 }
 
+// ElevenLabs servisinin dinleyici sınıfı
+class AudioPlayerDelegate: NSObject, ElevenLabsPlayerDelegate {
+    var onPlaybackFinish: () -> Void = {}
+    
+    func audioPlaybackDidFinish() {
+        onPlaybackFinish()
+    }
+}
+
 // Geçmiş detay görünümü
 struct HistoryDetailView: View {
     let item: TranslationHistory
     let historyService: TranslationHistoryService
     let dismiss: DismissAction
     @Environment(\.dismiss) private var dismissSheet
+    
+    // Ses servisi ve oynatma durumu
+    private let elevenLabsService = ElevenLabsService()
+    private let audioDelegate = AudioPlayerDelegate()
+    @State private var isPlaying = false
+    @State private var isLoading = false
+    @State private var isAudioCached = false
+    @State private var audioData: Data?
+    @State private var errorMessage: String?
     
     var body: some View {
         NavigationView {
@@ -248,10 +266,39 @@ struct HistoryDetailView: View {
                 }
                 .padding(.horizontal)
                 
+                // Hata mesajı (varsa)
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                        .padding(.horizontal)
+                }
+                
                 Spacer()
                 
                 // İşlem butonları
                 HStack(spacing: 20) {
+                    // Ses oynatma butonu
+                    Button {
+                        if isPlaying {
+                            stopAudio()
+                        } else {
+                            playAudio()
+                        }
+                    } label: {
+                        Label(
+                            isPlaying ? "Durdur" : (isAudioCached ? "Dinle (Önbellekten)" : "Dinle"),
+                            systemImage: isPlaying ? "stop.fill" : "speaker.wave.2.fill"
+                        )
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.purple.opacity(0.1))
+                        .cornerRadius(12)
+                        .foregroundColor(.purple)
+                    }
+                    .disabled(isLoading)
+                    .opacity(isLoading ? 0.5 : 1)
+                    
                     // Favorilere ekle/çıkar
                     Button {
                         historyService.toggleFavorite(for: item)
@@ -266,7 +313,10 @@ struct HistoryDetailView: View {
                         .cornerRadius(12)
                         .foregroundColor(item.isFavorite ? .gray : .yellow)
                     }
-                    
+                }
+                .padding(.horizontal)
+                
+                HStack(spacing: 20) {
                     // Kopyala
                     Button {
                         UIPasteboard.general.string = item.translatedText
@@ -274,6 +324,26 @@ struct HistoryDetailView: View {
                         generator.notificationOccurred(.success)
                     } label: {
                         Label("Kopyala", systemImage: "doc.on.doc")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(12)
+                            .foregroundColor(.blue)
+                    }
+                    
+                    // Paylaş butonu
+                    Button {
+                        let activityVC = UIActivityViewController(
+                            activityItems: [item.translatedText],
+                            applicationActivities: nil
+                        )
+                        
+                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                           let rootViewController = windowScene.windows.first?.rootViewController {
+                            rootViewController.present(activityVC, animated: true)
+                        }
+                    } label: {
+                        Label("Paylaş", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.blue.opacity(0.1))
@@ -307,8 +377,89 @@ struct HistoryDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Kapat") {
+                        // Ses çalıyorsa durdur
+                        if isPlaying {
+                            stopAudio()
+                        }
                         dismissSheet()
                     }
+                }
+            }
+            .onAppear {
+                // Delegate'e oynatma bittiğinde çağrılacak fonksiyonu belirle
+                audioDelegate.onPlaybackFinish = {
+                    DispatchQueue.main.async {
+                        self.isPlaying = false
+                    }
+                }
+                
+                // ElevenLabs delegatesini ayarla
+                elevenLabsService.delegate = audioDelegate
+                
+                // Önbellekte bu metin için ses var mı kontrol et
+                checkIfAudioCached()
+            }
+        }
+    }
+    
+    // Sesi oynat
+    private func playAudio() {
+        if let data = audioData {
+            // Önbellekte ses mevcutsa direkt oynat
+            playAudioData(data)
+        } else {
+            // Önbellekte yoksa API'den al
+            isLoading = true
+            errorMessage = nil
+            
+            elevenLabsService.convertTextToSpeech(text: item.translatedText) { result in
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    
+                    switch result {
+                    case .success(let data):
+                        self.audioData = data
+                        self.isAudioCached = true
+                        self.playAudioData(data)
+                        
+                    case .failure(let error):
+                        self.errorMessage = "Ses oluşturulamadı: \(error.localizedDescription)"
+                    }
+                }
+            }
+        }
+    }
+    
+    // Ses verisini çal
+    private func playAudioData(_ data: Data) {
+        do {
+            try elevenLabsService.playAudio(data: data)
+            isPlaying = true
+        } catch {
+            errorMessage = "Ses oynatılamadı: \(error.localizedDescription)"
+        }
+    }
+    
+    // Sesi durdur
+    private func stopAudio() {
+        elevenLabsService.stopAudio()
+        isPlaying = false
+    }
+    
+    // Önbellekte ses var mı kontrol et
+    private func checkIfAudioCached() {
+        isLoading = true
+        elevenLabsService.convertTextToSpeech(text: item.translatedText) { result in
+            DispatchQueue.main.async {
+                self.isLoading = false
+                
+                switch result {
+                case .success(let data):
+                    self.audioData = data
+                    self.isAudioCached = true
+                    
+                case .failure:
+                    self.isAudioCached = false
                 }
             }
         }
