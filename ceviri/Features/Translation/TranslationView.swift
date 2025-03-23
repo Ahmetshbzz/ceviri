@@ -69,10 +69,14 @@ struct TranslationView: View {
                                         // Yapıştır işlemi
                                         if let pasteString = UIPasteboard.general.string {
                                             viewModel.inputText = pasteString
+                                            let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                            impactGenerator.impactOccurred()
                                         }
                                     } else {
                                         // Çeviri işlemi
                                         onFocusChange(false)
+                                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                        impactGenerator.impactOccurred()
                                         Task {
                                             await viewModel.translate()
                                         }
@@ -137,6 +141,9 @@ struct TranslationView: View {
                                 HStack(spacing: 20) {
                                     // Sesli dinleme butonu
                                     Button {
+                                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                        impactGenerator.impactOccurred()
+                                        
                                         if case .speaking = viewModel.state {
                                             viewModel.stopAudio()
                                         } else {
@@ -156,8 +163,10 @@ struct TranslationView: View {
                                     // Kopyala butonu
                                     Button {
                                         UIPasteboard.general.string = viewModel.translatedText
-                                        let generator = UINotificationFeedbackGenerator()
-                                        generator.notificationOccurred(.success)
+                                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                        impactGenerator.impactOccurred()
+                                        let notificationGenerator = UINotificationFeedbackGenerator()
+                                        notificationGenerator.notificationOccurred(.success)
                                     } label: {
                                         Image(systemName: "doc.on.doc")
                                             .font(.system(size: 18))
@@ -169,6 +178,9 @@ struct TranslationView: View {
                                     
                                     // Paylaş butonu
                                     Button {
+                                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                        impactGenerator.impactOccurred()
+                                        
                                         let activityVC = UIActivityViewController(
                                             activityItems: [viewModel.translatedText],
                                             applicationActivities: nil
@@ -191,6 +203,9 @@ struct TranslationView: View {
                                     
                                     // Önbellek bilgisi düğmesi
                                     Button {
+                                        let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+                                        impactGenerator.impactOccurred()
+                                        
                                         withAnimation {
                                             viewModel.showCacheInfo.toggle()
                                         }
@@ -217,6 +232,8 @@ struct TranslationView: View {
                                             Spacer()
                                             
                                             Button {
+                                                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                                impactGenerator.impactOccurred()
                                                 viewModel.clearAudioCache()
                                             } label: {
                                                 Text("Temizle")
@@ -258,6 +275,8 @@ struct TranslationView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
                         showHistoryView = true
                     } label: {
                         Image(systemName: "clock.arrow.circlepath")

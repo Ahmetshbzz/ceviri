@@ -21,6 +21,9 @@ struct TranslationHeaderView: View {
                 HStack(alignment: .center) {
                     // Kaynak dil göstergesi
                     Button {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
+                        
                         showSourceLanguageOptions = true
                         // Klavyeyi kapat
                         onFocusChange(false)
@@ -51,6 +54,12 @@ struct TranslationHeaderView: View {
                     Button {
                         // Klavyeyi kapat
                         onFocusChange(false)
+                        
+                        if !(viewModel.translatedText.isEmpty || viewModel.selectedSourceLanguage.code == "auto") {
+                            let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                            impactGenerator.impactOccurred()
+                        }
+                        
                         Task {
                             await viewModel.swapLanguages()
                         }
@@ -70,6 +79,9 @@ struct TranslationHeaderView: View {
                     
                     // Hedef dil seçici
                     Button {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
+                        
                         showTargetLanguageOptions = true
                         // Klavyeyi kapat
                         onFocusChange(false)

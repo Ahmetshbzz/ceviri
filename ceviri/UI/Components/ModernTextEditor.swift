@@ -65,13 +65,21 @@ struct ModernTextEditor: View {
                     Spacer()
                     Button {
                         text = ""
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.gray.opacity(0.6))
-                            .font(.system(size: 16))
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 26, height: 26)
+                            .background(
+                                Circle()
+                                    .fill(Color.gray.opacity(0.8))
+                            )
+                            .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                     }
-                    .padding(.trailing, 8)
-                    .padding(.top, 6)
+                    .padding(.trailing, 10)
+                    .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
