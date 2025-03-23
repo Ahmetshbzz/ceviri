@@ -94,8 +94,10 @@ struct TranslationOutputView: View {
     // Ses oynatma butonu aktiflik durumu
     private var isAudioButtonDisabled: Bool {
         switch viewModel.state {
-        case .converting, .speaking, .error, .translating:
-            return false
+        case .translating, .detecting, .error:
+            return true
+        case .converting:
+            return true
         default:
             return viewModel.translatedText.isEmpty
         }

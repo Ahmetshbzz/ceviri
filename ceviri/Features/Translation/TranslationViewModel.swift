@@ -13,9 +13,9 @@ enum TranslationState {
     case error(String)
 }
 
-class TranslationViewModel: ObservableObject {
+class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
     private let geminiService: GeminiService
-    private let elevenLabsService = ElevenLabsService()
+    private let elevenLabsService: ElevenLabsService
     private let logger = Logger(subsystem: "com.app.ceviri", category: "TranslationViewModel")
     
     @Published var inputText: String = ""
@@ -45,6 +45,10 @@ class TranslationViewModel: ObservableObject {
             logger.info("TranslationViewModel başlatıldı")
         }
         
+        // ElevenLabs servisini oluştur ve delegate'i ayarla
+        self.elevenLabsService = ElevenLabsService()
+        self.elevenLabsService.delegate = self
+        
         // Metin girişi yapıldığında dil tespiti için debounce ekle
         $inputText
             .debounce(for: 0.8, scheduler: RunLoop.main)
@@ -58,6 +62,21 @@ class TranslationViewModel: ObservableObject {
         
         // Kullanılabilir sesleri yükle
         loadVoices()
+    }
+    
+    // ElevenLabsPlayerDelegate metodu
+    func audioPlaybackDidFinish() {
+        DispatchQueue.main.async { [weak self] in
+            self?.state = .success
+            self?.debugMessage = "Ses oynatma tamamlandı"
+            
+            // 2 saniye sonra debug mesajını temizle
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                if self?.debugMessage == "Ses oynatma tamamlandı" {
+                    self?.debugMessage = ""
+                }
+            }
+        }
     }
     
     func detectLanguage() async {
@@ -134,6 +153,12 @@ class TranslationViewModel: ObservableObject {
     func convertTextToSpeech() {
         guard !translatedText.isEmpty else { return }
         
+        // Eğer zaten konuşuyorsa, durdur
+        if case .speaking = state {
+            stopAudio()
+            return
+        }
+        
         DispatchQueue.main.async {
             self.state = .converting
             self.debugMessage = "Ses oluşturuluyor..."
@@ -165,9 +190,9 @@ class TranslationViewModel: ObservableObject {
         
         do {
             state = .speaking
-            debugMessage = "Ses çalınıyor..."
+            debugMessage = "Ses oynatılıyor..."
             try elevenLabsService.playAudio(data: audioData)
-            logger.info("Ses çalınıyor")
+            logger.info("Ses oynatılıyor")
         } catch {
             handleTextToSpeechError(error)
         }

@@ -1,14 +1,24 @@
 import Foundation
 import AVFoundation
 
-class ElevenLabsService {
+protocol ElevenLabsPlayerDelegate: AnyObject {
+    func audioPlaybackDidFinish()
+}
+
+class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     private let apiKey = "sk_a7856b10a9a2455aebac7bfe210f139e9bba2c9e01186710"
     private let baseURL = "https://api.elevenlabs.io/v1"
     private var audioPlayer: AVAudioPlayer?
     
+    weak var delegate: ElevenLabsPlayerDelegate?
+    
     // Varsayılan ses modeli ID'leri
     private let defaultVoiceID = "21m00Tcm4TlvDq8ikWAM" // Rachel - Doğal kadın sesi
     private let defaultModelID = "eleven_multilingual_v2"
+    
+    override init() {
+        super.init()
+    }
     
     func convertTextToSpeech(text: String, voiceID: String? = nil, completion: @escaping (Result<Data, Error>) -> Void) {
         let actualVoiceID = voiceID ?? defaultVoiceID
@@ -74,12 +84,18 @@ class ElevenLabsService {
         try AVAudioSession.sharedInstance().setActive(true)
         
         audioPlayer = try AVAudioPlayer(data: data)
+        audioPlayer?.delegate = self
         audioPlayer?.prepareToPlay()
         audioPlayer?.play()
     }
     
     func stopAudio() {
         audioPlayer?.stop()
+    }
+    
+    // AVAudioPlayerDelegate metodu - ses çalma tamamlandığında çağrılır
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        delegate?.audioPlaybackDidFinish()
     }
     
     // Mevcut sesleri listele
