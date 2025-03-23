@@ -24,6 +24,23 @@ struct TranslationOutputView: View {
                 HStack(spacing: 16) {
                     Spacer()
                     
+                    // Sesli dinleme butonu
+                    Button {
+                        if case .speaking = viewModel.state {
+                            viewModel.stopAudio()
+                        } else {
+                            viewModel.convertTextToSpeech()
+                        }
+                    } label: {
+                        Image(systemName: playButtonIcon)
+                            .padding(12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Circle())
+                            .foregroundColor(.blue)
+                    }
+                    .disabled(isAudioButtonDisabled)
+                    .opacity(isAudioButtonDisabled ? 0.5 : 1)
+                    
                     // Kopyala butonu
                     Button {
                         UIPasteboard.general.string = viewModel.translatedText
@@ -59,6 +76,28 @@ struct TranslationOutputView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
             }
+        }
+    }
+    
+    // Ses oynatma butonu durumuna göre ikonu değiştir
+    private var playButtonIcon: String {
+        switch viewModel.state {
+        case .speaking:
+            return "stop.fill"
+        case .converting:
+            return "waveform"
+        default:
+            return "speaker.wave.2.fill"
+        }
+    }
+    
+    // Ses oynatma butonu aktiflik durumu
+    private var isAudioButtonDisabled: Bool {
+        switch viewModel.state {
+        case .converting, .speaking, .error, .translating:
+            return false
+        default:
+            return viewModel.translatedText.isEmpty
         }
     }
 } 

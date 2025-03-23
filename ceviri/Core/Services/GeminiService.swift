@@ -50,8 +50,8 @@ class GeminiService {
         } else {
             prompt = """
             Metin çeviri görevi:
-            Aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguage) diline çevir.
-            Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme.
+            Aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguage) diline çevir. Açıklama yapma farklı bir cevap verme.
+            Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme kesinlikle !!!
             Kaynak dil: \(sourceLanguage)
             Hedef dil: \(targetLanguage)
             

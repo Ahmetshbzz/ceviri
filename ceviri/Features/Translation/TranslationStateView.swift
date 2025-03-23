@@ -7,24 +7,17 @@ struct TranslationStateView: View {
         ZStack {
             // Yükleme göstergesi
             if case .translating = viewModel.state {
-                ZStack {
-                    Color.black.opacity(0.3)
-                        .ignoresSafeArea()
-                    
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
-                        
-                        Text("Çeviriliyor...")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                    }
-                    .padding(24)
-                    .background(Color.black.opacity(0.7))
-                    .cornerRadius(16)
-                }
-                .transition(.opacity)
+                loadingOverlay(message: "Çeviriliyor...")
+            }
+            
+            // Ses oluşturma göstergesi
+            if case .converting = viewModel.state {
+                loadingOverlay(message: "Ses oluşturuluyor...")
+            }
+            
+            // Ses oynatma göstergesi
+            if case .speaking = viewModel.state {
+                loadingOverlay(message: "Ses oynatılıyor...", systemImage: "speaker.wave.2.fill")
             }
             
             // Hata mesajı
@@ -69,6 +62,40 @@ struct TranslationStateView: View {
                 .transition(.opacity)
             }
         }
+    }
+    
+    private func loadingOverlay(message: String, systemImage: String = "arrow.triangle.2.circlepath") -> some View {
+        ZStack {
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 16) {
+                if systemImage == "speaker.wave.2.fill" {
+                    // Ses dalgası animasyonu
+                    HStack(spacing: 5) {
+                        ForEach(0..<4) { i in
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.white)
+                                .frame(width: 4, height: 15 + CGFloat.random(in: 5...20))
+                                .offset(y: 3)
+                        }
+                    }
+                    .frame(height: 35)
+                } else {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .tint(.white)
+                }
+                
+                Text(message)
+                    .font(.headline)
+                    .foregroundColor(.white)
+            }
+            .padding(24)
+            .background(Color.black.opacity(0.7))
+            .cornerRadius(16)
+        }
+        .transition(.opacity)
     }
 }
 

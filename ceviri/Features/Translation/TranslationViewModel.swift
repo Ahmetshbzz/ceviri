@@ -7,12 +7,15 @@ enum TranslationState {
     case idle
     case detecting
     case translating
+    case converting
+    case speaking
     case success
     case error(String)
 }
 
 class TranslationViewModel: ObservableObject {
     private let geminiService: GeminiService
+    private let elevenLabsService = ElevenLabsService()
     private let logger = Logger(subsystem: "com.app.ceviri", category: "TranslationViewModel")
     
     @Published var inputText: String = ""
@@ -24,8 +27,12 @@ class TranslationViewModel: ObservableObject {
     @Published var availableLanguages = AppConfig.languages
     @Published var availableSourceLanguages = AppConfig.languages
     @Published var debugMessage: String = ""
+    @Published var availableVoices: [Voice] = []
+    @Published var selectedVoice: Voice?
+    @Published var isVoiceLoading: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
+    private var audioData: Data?
     
     init() {
         // API anahtarını kontrol et
@@ -48,6 +55,9 @@ class TranslationViewModel: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+        
+        // Kullanılabilir sesleri yükle
+        loadVoices()
     }
     
     func detectLanguage() async {
@@ -118,6 +128,84 @@ class TranslationViewModel: ObservableObject {
         } catch {
             await handleError(error: error, context: "çeviri")
         }
+    }
+    
+    // ElevenLabs ile çevrilmiş metni sese dönüştür
+    func convertTextToSpeech() {
+        guard !translatedText.isEmpty else { return }
+        
+        DispatchQueue.main.async {
+            self.state = .converting
+            self.debugMessage = "Ses oluşturuluyor..."
+        }
+        
+        elevenLabsService.convertTextToSpeech(text: translatedText, voiceID: selectedVoice?.voice_id) { [weak self] result in
+            guard let self = self else { return }
+            
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let data):
+                    self.audioData = data
+                    self.logger.info("Ses başarıyla oluşturuldu")
+                    self.playAudio()
+                    
+                case .failure(let error):
+                    self.handleTextToSpeechError(error)
+                }
+            }
+        }
+    }
+    
+    private func playAudio() {
+        guard let audioData = audioData else {
+            debugMessage = "‼️ Çalınacak ses verisi yok"
+            state = .error("Çalınacak ses verisi yok")
+            return
+        }
+        
+        do {
+            state = .speaking
+            debugMessage = "Ses çalınıyor..."
+            try elevenLabsService.playAudio(data: audioData)
+            logger.info("Ses çalınıyor")
+        } catch {
+            handleTextToSpeechError(error)
+        }
+    }
+    
+    func stopAudio() {
+        elevenLabsService.stopAudio()
+        state = .success
+        debugMessage = ""
+    }
+    
+    func loadVoices() {
+        isVoiceLoading = true
+        
+        elevenLabsService.listVoices { [weak self] result in
+            guard let self = self else { return }
+            
+            DispatchQueue.main.async {
+                self.isVoiceLoading = false
+                
+                switch result {
+                case .success(let voices):
+                    self.availableVoices = voices
+                    // Varsayılan bir ses seç (Rachel)
+                    self.selectedVoice = voices.first(where: { $0.voice_id == "21m00Tcm4TlvDq8ikWAM" })
+                    
+                case .failure(let error):
+                    self.logger.error("Ses listesi alınamadı: \(error.localizedDescription)")
+                    self.debugMessage = "Ses listesi alınamadı: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
+    private func handleTextToSpeechError(_ error: Error) {
+        logger.error("Ses oluşturma hatası: \(error.localizedDescription)")
+        state = .error("Ses oluşturma hatası: \(error.localizedDescription)")
+        debugMessage = "‼️ Ses oluşturma hatası: \(error.localizedDescription)"
     }
     
     private func handleError(error: Error, context: String) async {
