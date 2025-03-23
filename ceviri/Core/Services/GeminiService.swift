@@ -44,6 +44,9 @@ class GeminiService {
             Aşağıdaki metni \(targetLanguage) diline çevir.
             Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme.
             
+            ÖNEMLİ: İnsan adlarını, yer adlarını, şirket isimleri ve diğer özel isimleri çevirme, olduğu gibi koru.
+            Örneğin: John, New York, Google gibi özel isimleri çevirme.
+            
             Çevrilecek metin:
             \(text)
             """
@@ -52,6 +55,10 @@ class GeminiService {
             Metin çeviri görevi:
             Aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguage) diline çevir. Açıklama yapma farklı bir cevap verme.
             Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme kesinlikle !!!
+            
+            ÖNEMLİ: İnsan adlarını, yer adlarını, şirket isimleri ve diğer özel isimleri çevirme, olduğu gibi koru.
+            Örneğin: John, New York, Google gibi özel isimleri çevirme.
+            
             Kaynak dil: \(sourceLanguage)
             Hedef dil: \(targetLanguage)
             
