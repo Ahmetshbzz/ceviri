@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TranslationOutputView: View {
     @ObservedObject var viewModel: TranslationViewModel
+    @State private var showCacheInfo = false
     
     var body: some View {
         VStack {
@@ -19,9 +20,59 @@ struct TranslationOutputView: View {
             .padding(.horizontal)
             .frame(height: 140)
             
+            // Önbellek bilgisi
+            if showCacheInfo {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Ses Önbelleği:")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Button {
+                            viewModel.clearAudioCache()
+                        } label: {
+                            Text("Temizle")
+                                .font(.footnote)
+                                .foregroundColor(.blue)
+                        }
+                        .disabled(viewModel.audioCacheStats.count == 0)
+                    }
+                    
+                    HStack {
+                        Text("\(viewModel.audioCacheStats.count) ses, \(viewModel.getCacheSize())")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Text("6 saat sonra otomatik silinir")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 4)
+                .padding(.bottom, 8)
+            }
+            
             // İşlem butonları
             if !viewModel.translatedText.isEmpty {
                 HStack(spacing: 16) {
+                    // Önbellek bilgisi düğmesi
+                    Button {
+                        withAnimation {
+                            showCacheInfo.toggle()
+                        }
+                    } label: {
+                        Image(systemName: "cylinder.split.1x2")
+                            .padding(12)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(Circle())
+                            .foregroundColor(showCacheInfo ? .blue : .gray)
+                    }
+                    
                     Spacer()
                     
                     // Sesli dinleme butonu

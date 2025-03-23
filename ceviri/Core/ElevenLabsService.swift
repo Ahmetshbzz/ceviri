@@ -5,6 +5,14 @@ protocol ElevenLabsPlayerDelegate: AnyObject {
     func audioPlaybackDidFinish()
 }
 
+// Önbellekteki ses verileri için model
+struct CachedAudio {
+    let data: Data
+    let timestamp: Date
+    let text: String
+    let voiceID: String
+}
+
 class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     private let apiKey = "sk_a7856b10a9a2455aebac7bfe210f139e9bba2c9e01186710"
     private let baseURL = "https://api.elevenlabs.io/v1"
@@ -16,12 +24,90 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     private let defaultVoiceID = "21m00Tcm4TlvDq8ikWAM" // Rachel - Doğal kadın sesi
     private let defaultModelID = "eleven_multilingual_v2"
     
+    // Ses önbelleği ve zaman sınırı
+    private var audioCache: [String: CachedAudio] = [:]
+    private let cacheExpirationHours: TimeInterval = 6 // 6 saat sonra önbellek temizlenecek
+    private let maxCacheSize = 10 // Maksimum 10 ses dosyası önbellekte tutulacak
+    private var cacheCleaner: Timer?
+    
     override init() {
         super.init()
+        setupCacheCleaner()
+    }
+    
+    // Önbellek temizleyici zamanlayıcısını kur
+    private func setupCacheCleaner() {
+        // Her 30 dakikada bir kontrol et
+        cacheCleaner = Timer.scheduledTimer(withTimeInterval: 1800, repeats: true) { [weak self] _ in
+            self?.cleanExpiredCache()
+        }
+    }
+    
+    // Süresi dolmuş önbellek öğelerini temizle
+    private func cleanExpiredCache() {
+        let now = Date()
+        let keysToRemove = audioCache.filter { key, cachedAudio in
+            return now.timeIntervalSince(cachedAudio.timestamp) > (cacheExpirationHours * 3600)
+        }.keys
+        
+        for key in keysToRemove {
+            audioCache.removeValue(forKey: key)
+        }
+    }
+    
+    // Önbellek için benzersiz anahtar oluştur
+    private func cacheKey(text: String, voiceID: String) -> String {
+        return "\(text)_\(voiceID)"
+    }
+    
+    // Önbellekteki ses verisini getir
+    private func getCachedAudio(text: String, voiceID: String) -> Data? {
+        let key = cacheKey(text: text, voiceID: voiceID)
+        if let cachedAudio = audioCache[key] {
+            // Erişildiğinde zaman damgasını güncelle
+            audioCache[key] = CachedAudio(
+                data: cachedAudio.data,
+                timestamp: Date(),
+                text: cachedAudio.text,
+                voiceID: cachedAudio.voiceID
+            )
+            return cachedAudio.data
+        }
+        return nil
+    }
+    
+    // Ses verisini önbelleğe ekle
+    private func cacheAudio(text: String, voiceID: String, data: Data) {
+        let key = cacheKey(text: text, voiceID: voiceID)
+        
+        // Önbellek boyutu limitini kontrol et
+        if audioCache.count >= maxCacheSize {
+            // En eski önbellek öğesini bul ve kaldır
+            let oldestKey = audioCache.sorted { $0.value.timestamp < $1.value.timestamp }.first?.key
+            if let oldestKey = oldestKey {
+                audioCache.removeValue(forKey: oldestKey)
+            }
+        }
+        
+        // Yeni veriyi önbelleğe ekle
+        audioCache[key] = CachedAudio(
+            data: data,
+            timestamp: Date(),
+            text: text,
+            voiceID: voiceID
+        )
     }
     
     func convertTextToSpeech(text: String, voiceID: String? = nil, completion: @escaping (Result<Data, Error>) -> Void) {
         let actualVoiceID = voiceID ?? defaultVoiceID
+        
+        // Önbelleği kontrol et
+        if let cachedData = getCachedAudio(text: text, voiceID: actualVoiceID) {
+            print("Ses önbellekten alındı")
+            completion(.success(cachedData))
+            return
+        }
+        
         let endpoint = "\(baseURL)/text-to-speech/\(actualVoiceID)"
         
         guard let url = URL(string: endpoint) else {
@@ -51,7 +137,9 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
             return
         }
         
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self else { return }
+            
             if let error = error {
                 completion(.failure(error))
                 return
@@ -72,6 +160,9 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
                 completion(.failure(NSError(domain: "ElevenLabsService", code: 0, userInfo: [NSLocalizedDescriptionKey: "Veri bulunamadı"])))
                 return
             }
+            
+            // Başarılı veriyi önbelleğe ekle
+            self.cacheAudio(text: text, voiceID: actualVoiceID, data: data)
             
             completion(.success(data))
         }
@@ -132,6 +223,21 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
         }
         
         task.resume()
+    }
+    
+    // Önbellek istatistiklerini getir
+    func getCacheStats() -> (count: Int, totalSize: Int) {
+        let totalSize = audioCache.values.reduce(0) { $0 + $1.data.count }
+        return (audioCache.count, totalSize)
+    }
+    
+    // Önbelleği tamamen temizle
+    func clearCache() {
+        audioCache.removeAll()
+    }
+    
+    deinit {
+        cacheCleaner?.invalidate()
     }
 }
 

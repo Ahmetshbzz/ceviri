@@ -30,6 +30,7 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     @Published var availableVoices: [Voice] = []
     @Published var selectedVoice: Voice?
     @Published var isVoiceLoading: Bool = false
+    @Published var audioCacheStats: (count: Int, totalSize: Int) = (0, 0)
     
     private var cancellables = Set<AnyCancellable>()
     private var audioData: Data?
@@ -71,6 +72,19 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
         
         // Kullanılabilir sesleri yükle
         loadVoices()
+        
+        // Önbellek istatistiklerini güncelle
+        updateCacheStats()
+        
+        // Düzenli olarak önbellek istatistiklerini güncelle (her 5 dakikada bir)
+        Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
+            self?.updateCacheStats()
+        }
+    }
+    
+    // Önbellek istatistiklerini güncelle
+    private func updateCacheStats() {
+        audioCacheStats = elevenLabsService.getCacheStats()
     }
     
     // ElevenLabsPlayerDelegate metodu
@@ -203,6 +217,7 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
                 switch result {
                 case .success(let data):
                     self.audioData = data
+                    self.updateCacheStats() // Önbellek istatistiklerini güncelle
                     self.logger.info("Ses başarıyla oluşturuldu")
                     self.playAudio()
                     
@@ -256,6 +271,35 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
                     self.debugMessage = "Ses listesi alınamadı: \(error.localizedDescription)"
                 }
             }
+        }
+    }
+    
+    // Önbelleği temizle
+    func clearAudioCache() {
+        elevenLabsService.clearCache()
+        updateCacheStats()
+        debugMessage = "Ses önbelleği temizlendi"
+        
+        // 2 saniye sonra debug mesajını temizle
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            if self?.debugMessage == "Ses önbelleği temizlendi" {
+                self?.debugMessage = ""
+            }
+        }
+    }
+    
+    // İnsan okunabilir formatında önbellek boyutunu döndür
+    func getCacheSize() -> String {
+        let bytes = audioCacheStats.totalSize
+        
+        if bytes < 1024 {
+            return "\(bytes) B"
+        } else if bytes < 1024 * 1024 {
+            let kb = Double(bytes) / 1024.0
+            return String(format: "%.1f KB", kb)
+        } else {
+            let mb = Double(bytes) / (1024.0 * 1024.0)
+            return String(format: "%.1f MB", mb)
         }
     }
     
