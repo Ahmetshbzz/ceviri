@@ -15,52 +15,9 @@ struct ModernTextEditor: View {
     }
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            TextEditor(text: $text)
-                .focused($isFocused)
-                .disabled(!isEditable)
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
-                .font(.system(size: 16))
-                .fontWeight(.regular)
-                .tint(.blue)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
-                .frame(height: maxHeight)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(backgroundColor)
-                        .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
-                )
-                .onTapGesture {
-                    if isEditable {
-                        isFocused = true
-                    }
-                }
-                .onChange(of: text) { oldValue, newValue in
-                    // Enter tuşuna basıldığında işlem yap
-                    if newValue.contains("\n") && isEditable && onCommit != nil {
-                        let lastChar = newValue.last
-                        text = String(newValue.dropLast())
-                        
-                        if lastChar == "\n" {
-                            isFocused = false
-                            onCommit?()
-                        }
-                    }
-                }
-            
-            if text.isEmpty {
-                // Boş placeholder
-                Text(placeholder)
-                    .foregroundColor(Color.gray.opacity(0.6))
-                    .font(.system(size: 16))
-                    .padding(.horizontal, 12)
-                    .padding(.top, 10)
-                    .allowsHitTesting(false)
-            }
-            
+        VStack(spacing: 0) {
             if isEditable && !text.isEmpty {
+                // Silme butonu üstte, ZStack'in dışında
                 HStack {
                     Spacer()
                     Button {
@@ -78,10 +35,54 @@ struct ModernTextEditor: View {
                             )
                             .shadow(color: Color.black.opacity(0.1), radius: 1, x: 0, y: 1)
                     }
-                    .padding(.trailing, 10)
-                    .padding(.top, 8)
                 }
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.bottom, 4)
+            }
+            
+            ZStack(alignment: .topLeading) {
+                TextEditor(text: $text)
+                    .focused($isFocused)
+                    .disabled(!isEditable)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
+                    .font(.system(size: 16))
+                    .fontWeight(.regular)
+                    .tint(.blue)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 6)
+                    .frame(height: maxHeight)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(backgroundColor)
+                            .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
+                    )
+                    .onTapGesture {
+                        if isEditable {
+                            isFocused = true
+                        }
+                    }
+                    .onChange(of: text) { oldValue, newValue in
+                        // Enter tuşuna basıldığında işlem yap
+                        if newValue.contains("\n") && isEditable && onCommit != nil {
+                            let lastChar = newValue.last
+                            text = String(newValue.dropLast())
+                            
+                            if lastChar == "\n" {
+                                isFocused = false
+                                onCommit?()
+                            }
+                        }
+                    }
+                
+                if text.isEmpty {
+                    // Boş placeholder
+                    Text(placeholder)
+                        .foregroundColor(Color.gray.opacity(0.6))
+                        .font(.system(size: 16))
+                        .padding(.horizontal, 12)
+                        .padding(.top, 10)
+                        .allowsHitTesting(false)
+                }
             }
         }
     }
@@ -129,7 +130,7 @@ struct TranslateAreaTextEditor: View {
                     .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
             )
         }
-        .frame(height: maxHeight + 28) // Padding ve etiket için fazladan alan
+        .frame(height: maxHeight + (isEditable && !text.isEmpty ? 58 : 28)) // Silme butonu için fazladan alan
     }
 }
 
