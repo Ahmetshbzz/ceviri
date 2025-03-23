@@ -26,8 +26,7 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     
     // Ses önbelleği ve zaman sınırı
     private var audioCache: [String: CachedAudio] = [:]
-    private let cacheExpirationHours: TimeInterval = 6 // 6 saat sonra önbellek temizlenecek
-    private let maxCacheSize = 10 // Maksimum 10 ses dosyası önbellekte tutulacak
+    private let cacheExpirationHours: TimeInterval = 24 // 24 saat sonra önbellek temizlenecek
     private var cacheCleaner: Timer?
     
     // Önbellek için dosya sistemi yolları ve meta veri anahtarı
@@ -183,23 +182,6 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     // Ses verisini önbelleğe ekle
     private func cacheAudio(text: String, voiceID: String, data: Data) {
         let key = cacheKey(text: text, voiceID: voiceID)
-        
-        // Önbellek boyutu limitini kontrol et
-        if audioCache.count >= maxCacheSize {
-            // En eski önbellek öğesini bul ve kaldır
-            if let oldestItem = audioCache.min(by: { $0.value.timestamp < $1.value.timestamp }) {
-                // Diskten dosyayı sil
-                let oldFileURL = getCacheDirectoryURL().appendingPathComponent(oldestItem.value.filename)
-                do {
-                    try FileManager.default.removeItem(at: oldFileURL)
-                } catch {
-                    print("Eski önbellek dosyası silinemedi: \(error.localizedDescription)")
-                }
-                
-                // Önbellekten kaldır
-                audioCache.removeValue(forKey: oldestItem.key)
-            }
-        }
         
         // Yeni ses dosyasını benzersiz bir isimle kaydet
         let filename = "\(UUID().uuidString).audio"

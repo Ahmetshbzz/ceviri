@@ -250,7 +250,7 @@ struct TranslationView: View {
                             
                             Spacer()
                                             
-                                            Text("6 saat sonra otomatik silinir")
+                                            Text("24 saat sonra otomatik silinir")
                                                 .font(.caption)
                                                 .foregroundColor(.secondary)
                                         }
