@@ -13,7 +13,7 @@ enum TranslationState {
     case error(String)
 }
 
-class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
+class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, TranslationHistoryDelegate {
     private let geminiService: GeminiService
     private let elevenLabsService: ElevenLabsService
     private let logger = Logger(subsystem: "com.app.ceviri", category: "TranslationViewModel")
@@ -34,8 +34,11 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
     private var cancellables = Set<AnyCancellable>()
     private var audioData: Data?
     
+    // Geçmiş servisi
+    private let historyService: TranslationHistoryService
+    
     init() {
-        // API anahtarını kontrol et
+        // Önce tüm servisleri başlat
         if AppConfig.geminiAPIKey.isEmpty || AppConfig.geminiAPIKey == "API_ANAHTARINIZI_BURAYA_YAZIN" {
             self.geminiService = GeminiService(apiKey: "")
             logger.error("⚠️ API anahtarı ayarlanmamış! AppConfig.swift dosyasında geminiAPIKey değerini güncellemelisiniz.")
@@ -45,8 +48,14 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
             logger.info("TranslationViewModel başlatıldı")
         }
         
-        // ElevenLabs servisini oluştur ve delegate'i ayarla
+        // ElevenLabs servisini oluştur
         self.elevenLabsService = ElevenLabsService()
+        
+        // Geçmiş servisini oluştur
+        historyService = TranslationHistoryService()
+        
+        // Delegate'leri ayarla
+        historyService.delegate = self
         self.elevenLabsService.delegate = self
         
         // Metin girişi yapıldığında dil tespiti için debounce ekle
@@ -140,14 +149,24 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
                 return
             }
             
-            let result = try await geminiService.translateText(
+            // Çeviriyi yap
+            let translatedText = try await geminiService.translateText(
                 text: inputText,
                 sourceLanguage: sourceLanguage,
                 targetLanguage: selectedTargetLanguage.name
             )
             
             await MainActor.run {
-                self.translatedText = result
+                self.translatedText = translatedText
+                
+                // Çeviriyi geçmişe kaydet
+                historyService.addToHistory(
+                    sourceText: inputText,
+                    translatedText: translatedText,
+                    sourceLanguage: selectedSourceLanguage.name,
+                    targetLanguage: selectedTargetLanguage.name
+                )
+                
                 self.state = .success
                 self.debugMessage = ""
                 logger.info("Çeviri başarılı")
@@ -320,5 +339,24 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
         
         // Yeni çeviriyi başlat
         await translate()
+    }
+    
+    // Geçmiş öğesi seçildiğinde çağrılır
+    func didSelectHistoryItem(_ item: TranslationHistory) {
+        // Geçmiş öğesindeki metinleri ve dilleri ayarla
+        inputText = item.sourceText
+        translatedText = item.translatedText
+        
+        // Kaynak ve hedef dilleri bul
+        if let sourceLang = availableLanguages.first(where: { $0.name == item.sourceLanguage }) {
+            selectedSourceLanguage = sourceLang
+        }
+        
+        if let targetLang = availableLanguages.first(where: { $0.name == item.targetLanguage }) {
+            selectedTargetLanguage = targetLang
+        }
+        
+        // Durumu güncelle
+        state = .success
     }
 } 

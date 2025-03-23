@@ -5,6 +5,7 @@ struct TranslationView: View {
     @FocusState private var isInputFocused: Bool
     @State private var showSourceLanguageOptions = false
     @State private var showTargetLanguageOptions = false
+    @State private var showHistoryView = false
     
     var body: some View {
         NavigationStack {
@@ -47,6 +48,15 @@ struct TranslationView: View {
             }
             .navigationTitle("Ceviri")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showHistoryView = true
+                    } label: {
+                        Image(systemName: "clock.arrow.circlepath")
+                    }
+                }
+            }
             .sheet(isPresented: $showSourceLanguageOptions) {
                 LanguageSelectionView(
                     selectedLanguage: $viewModel.selectedSourceLanguage,
@@ -66,6 +76,10 @@ struct TranslationView: View {
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showHistoryView) {
+                TranslationHistoryView()
+                    .presentationDragIndicator(.visible)
             }
             .overlay {
                 // Durum görünümleri
