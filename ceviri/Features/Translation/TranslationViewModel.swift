@@ -30,7 +30,8 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     @Published var availableVoices: [Voice] = []
     @Published var selectedVoice: Voice?
     @Published var isVoiceLoading: Bool = false
-    @Published var audioCacheStats: (count: Int, totalSize: Int) = (0, 0)
+    @Published var audioCacheStats: (count: Int, totalSizeInBytes: Int) = (0, 0)
+    @Published var showCacheInfo: Bool = false
     
     private var cancellables = Set<AnyCancellable>()
     private var audioData: Data?
@@ -290,7 +291,7 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     
     // İnsan okunabilir formatında önbellek boyutunu döndür
     func getCacheSize() -> String {
-        let bytes = audioCacheStats.totalSize
+        let bytes = audioCacheStats.totalSizeInBytes
         
         if bytes < 1024 {
             return "\(bytes) B"
@@ -402,5 +403,15 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
         
         // Durumu güncelle
         state = .success
+    }
+    
+    func getSourceLanguageText() -> String {
+        if detectedLanguage.isEmpty && selectedSourceLanguage.code == "auto" {
+            return "Otomatik"
+        } else if selectedSourceLanguage.code != "auto" {
+            return selectedSourceLanguage.name
+        } else {
+            return getDetectedLanguageName()
+        }
     }
 } 

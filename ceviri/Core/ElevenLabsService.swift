@@ -351,11 +351,11 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     }
     
     // Önbellek istatistiklerini getir
-    func getCacheStats() -> (count: Int, totalSize: Int) {
+    func getCacheStats() -> (count: Int, totalSizeInBytes: Int) {
         let fileManager = FileManager.default
         let cacheDir = getCacheDirectoryURL()
         
-        var totalSize = 0
+        var totalSizeInBytes = 0
         
         do {
             // Ses dosyaları için toplam boyutu hesapla (meta veri dosyası hariç)
@@ -364,14 +364,14 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
             for fileUrl in fileUrls where fileUrl.lastPathComponent != cacheMetadataFilename {
                 let attributes = try fileUrl.resourceValues(forKeys: [.fileSizeKey])
                 if let size = attributes.fileSize {
-                    totalSize += size
+                    totalSizeInBytes += size
                 }
             }
         } catch {
             print("Önbellek boyutu hesaplanamadı: \(error.localizedDescription)")
         }
         
-        return (audioCache.count, totalSize)
+        return (audioCache.count, totalSizeInBytes)
     }
     
     // Önbelleği tamamen temizle

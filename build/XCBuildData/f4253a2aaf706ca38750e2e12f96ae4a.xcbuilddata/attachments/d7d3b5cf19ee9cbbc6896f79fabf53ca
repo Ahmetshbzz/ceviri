@@ -1,0 +1,110 @@
+{
+  "" : {
+    "const-values" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviri-master.swiftconstvalues",
+    "dependencies" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviri-master.d",
+    "diagnostics" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviri-master.dia",
+    "emit-module-dependencies" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviri-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviri-master-emit-module.dia",
+    "swift-dependencies" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviri-master.swiftdeps"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/ContentView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Core/ElevenLabsService.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ElevenLabsService.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ElevenLabsService.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ElevenLabsService.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Core/Services/AppConfig.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/AppConfig.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/AppConfig.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/AppConfig.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Core/Services/GeminiService.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/GeminiService.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/GeminiService.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/GeminiService.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/History/TranslationHistoryModel.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryModel.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryModel.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryModel.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/History/TranslationHistoryService.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryService.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryService.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryService.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/History/TranslationHistoryView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHistoryView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/Translation/LanguageSelectionView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/LanguageSelectionView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/LanguageSelectionView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/LanguageSelectionView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/Translation/TranslationHeaderView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHeaderView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHeaderView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationHeaderView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/Translation/TranslationInputView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationInputView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationInputView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationInputView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/Translation/TranslationOutputView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationOutputView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationOutputView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationOutputView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/Translation/TranslationStateView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationStateView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationStateView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationStateView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/Translation/TranslationView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Features/Translation/TranslationViewModel.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationViewModel.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationViewModel.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/TranslationViewModel.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/Models/Language.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/Language.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/Language.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/Language.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/UI/Components/CardView.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/CardView.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/CardView.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/CardView.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/UI/Components/ModernLanguagePicker.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ModernLanguagePicker.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ModernLanguagePicker.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ModernLanguagePicker.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/UI/Components/ModernTextEditor.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ModernTextEditor.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ModernTextEditor.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ModernTextEditor.o"
+  },
+  "/Users/ahmet/Desktop/projeler-bireysel/ceviri/ceviri/ceviriApp.swift" : {
+    "index-unit-output-path" : "/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviriApp.o",
+    "llvm-bc" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviriApp.bc",
+    "object" : "/Users/ahmet/Desktop/projeler-bireysel/ceviri/build/ceviri.build/Release-iphoneos/ceviri.build/Objects-normal/arm64/ceviriApp.o"
+  }
+}

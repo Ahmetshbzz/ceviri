@@ -2,7 +2,6 @@ import SwiftUI
 
 struct TranslationOutputView: View {
     @ObservedObject var viewModel: TranslationViewModel
-    @State private var showCacheInfo = false
     
     var body: some View {
         VStack {
@@ -21,7 +20,7 @@ struct TranslationOutputView: View {
             .frame(height: 140)
             
             // Önbellek bilgisi
-            if showCacheInfo {
+            if viewModel.showCacheInfo {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("Ses Önbelleği:")
@@ -63,14 +62,14 @@ struct TranslationOutputView: View {
                     // Önbellek bilgisi düğmesi
                     Button {
                         withAnimation {
-                            showCacheInfo.toggle()
+                            viewModel.showCacheInfo.toggle()
                         }
                     } label: {
                         Image(systemName: "cylinder.split.1x2")
                             .padding(12)
                             .background(Color.blue.opacity(0.1))
                             .clipShape(Circle())
-                            .foregroundColor(showCacheInfo ? .blue : .gray)
+                            .foregroundColor(viewModel.showCacheInfo ? .blue : .gray)
                     }
                     
                     Spacer()
