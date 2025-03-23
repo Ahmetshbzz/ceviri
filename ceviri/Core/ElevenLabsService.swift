@@ -6,11 +6,11 @@ protocol ElevenLabsPlayerDelegate: AnyObject {
 }
 
 // Önbellekteki ses verileri için model
-struct CachedAudio {
-    let data: Data
+struct CachedAudio: Codable {
     let timestamp: Date
     let text: String
     let voiceID: String
+    var filename: String // Disk üzerindeki dosya adı
 }
 
 class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
@@ -30,9 +30,83 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     private let maxCacheSize = 10 // Maksimum 10 ses dosyası önbellekte tutulacak
     private var cacheCleaner: Timer?
     
+    // Önbellek için dosya sistemi yolları ve meta veri anahtarı
+    private let cacheFolderName = "ElevenLabsCache"
+    private let cacheMetadataFilename = "cache_metadata.json"
+    
     override init() {
         super.init()
+        
+        // Önbellek klasörünü oluştur (yoksa)
+        createCacheDirectory()
+        
+        // Önbellek meta verilerini disk üzerinden yükle
+        loadCacheMetadata()
+        
         setupCacheCleaner()
+    }
+    
+    // Önbellek klasörünün yolunu al
+    private func getCacheDirectoryURL() -> URL {
+        let fileManager = FileManager.default
+        let cacheDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        return cacheDir.appendingPathComponent(cacheFolderName, isDirectory: true)
+    }
+    
+    // Önbellek klasörünü oluştur
+    private func createCacheDirectory() {
+        let fileManager = FileManager.default
+        let cacheDir = getCacheDirectoryURL()
+        
+        if !fileManager.fileExists(atPath: cacheDir.path) {
+            do {
+                try fileManager.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+            } catch {
+                print("Önbellek klasörü oluşturulamadı: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // Önbellek meta verilerini disk üzerinden yükle
+    private func loadCacheMetadata() {
+        let fileManager = FileManager.default
+        let metadataURL = getCacheDirectoryURL().appendingPathComponent(cacheMetadataFilename)
+        
+        if fileManager.fileExists(atPath: metadataURL.path) {
+            do {
+                let data = try Data(contentsOf: metadataURL)
+                let metadata = try JSONDecoder().decode([String: CachedAudio].self, from: data)
+                
+                // Önbelleğe yükle ve dosya varlığını kontrol et
+                for (key, cachedAudio) in metadata {
+                    let audioFileURL = getCacheDirectoryURL().appendingPathComponent(cachedAudio.filename)
+                    
+                    // Eğer ses dosyası diskten silinmişse, meta veriden de kaldır
+                    if fileManager.fileExists(atPath: audioFileURL.path) {
+                        audioCache[key] = cachedAudio
+                    }
+                }
+                
+                print("Önbellek meta verileri yüklendi: \(audioCache.count) öğe")
+                
+                // Süresi dolmuş önbellek öğelerini temizle
+                cleanExpiredCache()
+            } catch {
+                print("Önbellek meta verileri yüklenemedi: \(error.localizedDescription)")
+                audioCache = [:]
+            }
+        }
+    }
+    
+    // Önbellek meta verilerini diske kaydet
+    private func saveCacheMetadata() {
+        do {
+            let metadataURL = getCacheDirectoryURL().appendingPathComponent(cacheMetadataFilename)
+            let data = try JSONEncoder().encode(audioCache)
+            try data.write(to: metadataURL)
+        } catch {
+            print("Önbellek meta verileri kaydedilemedi: \(error.localizedDescription)")
+        }
     }
     
     // Önbellek temizleyici zamanlayıcısını kur
@@ -46,12 +120,29 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     // Süresi dolmuş önbellek öğelerini temizle
     private func cleanExpiredCache() {
         let now = Date()
+        let fileManager = FileManager.default
         let keysToRemove = audioCache.filter { key, cachedAudio in
             return now.timeIntervalSince(cachedAudio.timestamp) > (cacheExpirationHours * 3600)
-        }.keys
+        }
         
-        for key in keysToRemove {
+        for (key, cachedAudio) in keysToRemove {
+            // Meta veriden kaldır
             audioCache.removeValue(forKey: key)
+            
+            // Diskten dosyayı sil
+            let audioFileURL = getCacheDirectoryURL().appendingPathComponent(cachedAudio.filename)
+            do {
+                if fileManager.fileExists(atPath: audioFileURL.path) {
+                    try fileManager.removeItem(at: audioFileURL)
+                }
+            } catch {
+                print("Önbellek dosyası silinemedi: \(error.localizedDescription)")
+            }
+        }
+        
+        // Meta verileri güncelle
+        if !keysToRemove.isEmpty {
+            saveCacheMetadata()
         }
     }
     
@@ -63,15 +154,28 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     // Önbellekteki ses verisini getir
     private func getCachedAudio(text: String, voiceID: String) -> Data? {
         let key = cacheKey(text: text, voiceID: voiceID)
+        
         if let cachedAudio = audioCache[key] {
             // Erişildiğinde zaman damgasını güncelle
             audioCache[key] = CachedAudio(
-                data: cachedAudio.data,
                 timestamp: Date(),
                 text: cachedAudio.text,
-                voiceID: cachedAudio.voiceID
+                voiceID: cachedAudio.voiceID,
+                filename: cachedAudio.filename
             )
-            return cachedAudio.data
+            saveCacheMetadata()
+            
+            // Diskten ses dosyasını oku
+            let audioFileURL = getCacheDirectoryURL().appendingPathComponent(cachedAudio.filename)
+            do {
+                return try Data(contentsOf: audioFileURL)
+            } catch {
+                // Dosya okunamazsa önbellekten kaldır
+                audioCache.removeValue(forKey: key)
+                saveCacheMetadata()
+                print("Önbellek dosyası okunamadı: \(error.localizedDescription)")
+                return nil
+            }
         }
         return nil
     }
@@ -83,19 +187,40 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
         // Önbellek boyutu limitini kontrol et
         if audioCache.count >= maxCacheSize {
             // En eski önbellek öğesini bul ve kaldır
-            let oldestKey = audioCache.sorted { $0.value.timestamp < $1.value.timestamp }.first?.key
-            if let oldestKey = oldestKey {
-                audioCache.removeValue(forKey: oldestKey)
+            if let oldestItem = audioCache.min(by: { $0.value.timestamp < $1.value.timestamp }) {
+                // Diskten dosyayı sil
+                let oldFileURL = getCacheDirectoryURL().appendingPathComponent(oldestItem.value.filename)
+                do {
+                    try FileManager.default.removeItem(at: oldFileURL)
+                } catch {
+                    print("Eski önbellek dosyası silinemedi: \(error.localizedDescription)")
+                }
+                
+                // Önbellekten kaldır
+                audioCache.removeValue(forKey: oldestItem.key)
             }
         }
         
-        // Yeni veriyi önbelleğe ekle
-        audioCache[key] = CachedAudio(
-            data: data,
-            timestamp: Date(),
-            text: text,
-            voiceID: voiceID
-        )
+        // Yeni ses dosyasını benzersiz bir isimle kaydet
+        let filename = "\(UUID().uuidString).audio"
+        let fileURL = getCacheDirectoryURL().appendingPathComponent(filename)
+        
+        do {
+            try data.write(to: fileURL)
+            
+            // Meta verileri güncelle
+            let newCachedAudio = CachedAudio(
+                timestamp: Date(),
+                text: text,
+                voiceID: voiceID,
+                filename: filename
+            )
+            
+            audioCache[key] = newCachedAudio
+            saveCacheMetadata()
+        } catch {
+            print("Ses dosyası önbelleğe kaydedilemedi: \(error.localizedDescription)")
+        }
     }
     
     func convertTextToSpeech(text: String, voiceID: String? = nil, completion: @escaping (Result<Data, Error>) -> Void) {
@@ -227,13 +352,47 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     
     // Önbellek istatistiklerini getir
     func getCacheStats() -> (count: Int, totalSize: Int) {
-        let totalSize = audioCache.values.reduce(0) { $0 + $1.data.count }
+        let fileManager = FileManager.default
+        let cacheDir = getCacheDirectoryURL()
+        
+        var totalSize = 0
+        
+        do {
+            // Ses dosyaları için toplam boyutu hesapla (meta veri dosyası hariç)
+            let fileUrls = try fileManager.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: [.fileSizeKey])
+            
+            for fileUrl in fileUrls where fileUrl.lastPathComponent != cacheMetadataFilename {
+                let attributes = try fileUrl.resourceValues(forKeys: [.fileSizeKey])
+                if let size = attributes.fileSize {
+                    totalSize += size
+                }
+            }
+        } catch {
+            print("Önbellek boyutu hesaplanamadı: \(error.localizedDescription)")
+        }
+        
         return (audioCache.count, totalSize)
     }
     
     // Önbelleği tamamen temizle
     func clearCache() {
-        audioCache.removeAll()
+        let fileManager = FileManager.default
+        let cacheDir = getCacheDirectoryURL()
+        
+        do {
+            let fileUrls = try fileManager.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: nil)
+            
+            for fileUrl in fileUrls {
+                try fileManager.removeItem(at: fileUrl)
+            }
+            
+            audioCache.removeAll()
+            saveCacheMetadata() // Boş meta veriyi kaydet
+            
+            print("Önbellek temizlendi")
+        } catch {
+            print("Önbellek temizlenirken hata oluştu: \(error.localizedDescription)")
+        }
     }
     
     deinit {
