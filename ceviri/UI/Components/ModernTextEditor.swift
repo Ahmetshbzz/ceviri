@@ -9,7 +9,6 @@ struct ModernTextEditor: View {
     
     @FocusState private var isFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
-    @State private var hasPasteableContent = false
     
     private var backgroundColor: Color {
         colorScheme == .dark ? Color(UIColor.systemGray6) : Color(UIColor.systemBackground)
@@ -59,32 +58,6 @@ struct ModernTextEditor: View {
                     .padding(.horizontal, 12)
                     .padding(.top, 10)
                     .allowsHitTesting(false)
-                
-                // Metin boşsa ve düzenlenebilirse, yapıştır butonu göster
-                if isEditable && UIPasteboard.general.hasStrings {
-                    HStack {
-                        Spacer()
-                        Button {
-                            if let pasteString = UIPasteboard.general.string {
-                                text = pasteString
-                            }
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "doc.on.clipboard.fill")
-                                    .font(.system(size: 12))
-                                Text("Yapıştır")
-                                    .font(.system(size: 12, weight: .medium))
-                            }
-                            .foregroundColor(.white)
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 8)
-                            .background(Color.blue)
-                            .cornerRadius(6)
-                        }
-                        .padding(8)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                }
             }
             
             if isEditable && !text.isEmpty {
@@ -102,10 +75,6 @@ struct ModernTextEditor: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
-        }
-        .onAppear {
-            // Pano içeriğini kontrol et
-            hasPasteableContent = UIPasteboard.general.hasStrings
         }
     }
 }

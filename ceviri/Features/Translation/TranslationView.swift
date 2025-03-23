@@ -65,24 +65,44 @@ struct TranslationView: View {
                             HStack {
                                 Spacer()
                                 Button {
-                                    onFocusChange(false)
-                                    Task {
-                                        await viewModel.translate()
+                                    if viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings {
+                                        // Yapıştır işlemi
+                                        if let pasteString = UIPasteboard.general.string {
+                                            viewModel.inputText = pasteString
+                                        }
+                                    } else {
+                                        // Çeviri işlemi
+                                        onFocusChange(false)
+                                        Task {
+                                            await viewModel.translate()
+                                        }
                                     }
                                 } label: {
                                     HStack(spacing: 8) {
-                                        Text("Çevir")
-                                        Image(systemName: "arrow.down")
+                                        if viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings {
+                                            Text("Yapıştır")
+                                            Image(systemName: "doc.on.clipboard")
+                                        } else {
+                                            Text("Çevir")
+                                            Image(systemName: "arrow.down")
+                                        }
                                     }
                                     .padding(.vertical, 8)
                                     .padding(.horizontal, 20)
-                                    .background(viewModel.canTranslate() ? Color.blue : Color.gray.opacity(0.3))
+                                    .background(
+                                        (viewModel.canTranslate() || (viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings)) ? 
+                                            Color.blue : Color.gray.opacity(0.3)
+                                    )
                                     .foregroundColor(.white)
                                     .cornerRadius(20)
                                     .font(.headline)
-                                    .shadow(color: viewModel.canTranslate() ? Color.blue.opacity(0.3) : Color.clear, radius: 3, x: 0, y: 1)
+                                    .shadow(color: 
+                                        (viewModel.canTranslate() || (viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings)) ? 
+                                            Color.blue.opacity(0.3) : Color.clear, 
+                                        radius: 3, x: 0, y: 1
+                                    )
                                 }
-                                .disabled(!viewModel.canTranslate())
+                                .disabled(!viewModel.canTranslate() && !(viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings))
                                 .padding(.bottom, 12)
                                 .padding(.trailing, 16)
                             }
