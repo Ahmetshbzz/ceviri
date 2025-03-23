@@ -12,11 +12,7 @@ struct ModernTextEditor: View {
     @State private var hasPasteableContent = false
     
     private var backgroundColor: Color {
-        colorScheme == .dark ? Color(UIColor.systemGray6) : Color(UIColor.systemGray6).opacity(0.5)
-    }
-    
-    private var borderColor: Color {
-        isFocused ? Color.blue.opacity(0.4) : Color.clear
+        colorScheme == .dark ? Color(UIColor.systemGray6) : Color(UIColor.systemBackground)
     }
     
     var body: some View {
@@ -29,24 +25,19 @@ struct ModernTextEditor: View {
                 .font(.system(size: 16))
                 .fontWeight(.regular)
                 .tint(.blue)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
                 .frame(height: maxHeight)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(isEditable ? backgroundColor : Color.clear)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(borderColor, lineWidth: isFocused ? 2 : 0)
-                        )
-                        .shadow(color: isFocused ? Color.blue.opacity(0.1) : Color.clear, radius: 4, x: 0, y: 1)
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(backgroundColor)
+                        .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
                 )
                 .onTapGesture {
                     if isEditable {
                         isFocused = true
                     }
                 }
-                .animation(.easeInOut(duration: 0.2), value: isFocused)
                 .onChange(of: text) { oldValue, newValue in
                     // Enter tuşuna basıldığında işlem yap
                     if newValue.contains("\n") && isEditable && onCommit != nil {
@@ -65,8 +56,8 @@ struct ModernTextEditor: View {
                 Text(placeholder)
                     .foregroundColor(Color.gray.opacity(0.6))
                     .font(.system(size: 16))
-                    .padding(.horizontal, 16)
-                    .padding(.top, 14)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 10)
                     .allowsHitTesting(false)
                 
                 // Metin boşsa ve düzenlenebilirse, yapıştır butonu göster
@@ -80,23 +71,23 @@ struct ModernTextEditor: View {
                         } label: {
                             HStack(spacing: 4) {
                                 Image(systemName: "doc.on.clipboard.fill")
-                                    .font(.system(size: 14))
+                                    .font(.system(size: 12))
                                 Text("Yapıştır")
-                                    .font(.system(size: 14, weight: .medium))
+                                    .font(.system(size: 12, weight: .medium))
                             }
                             .foregroundColor(.white)
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 8)
                             .background(Color.blue)
-                            .cornerRadius(16)
+                            .cornerRadius(6)
                         }
-                        .padding(12)
+                        .padding(8)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                 }
             }
             
-            if isEditable && isFocused && !text.isEmpty {
+            if isEditable && !text.isEmpty {
                 HStack {
                     Spacer()
                     Button {
@@ -105,14 +96,9 @@ struct ModernTextEditor: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.gray.opacity(0.6))
                             .font(.system(size: 16))
-                            .background(
-                                Circle()
-                                    .fill(Color.white.opacity(0.8))
-                                    .frame(width: 16, height: 16)
-                            )
                     }
-                    .padding(.trailing, 12)
-                    .padding(.top, 12)
+                    .padding(.trailing, 8)
+                    .padding(.top, 6)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
@@ -133,37 +119,45 @@ struct TranslateAreaTextEditor: View {
     var onCommit: (() -> Void)?
     @Environment(\.colorScheme) private var colorScheme
     
-    private var areaBackgroundColor: Color {
+    private var backgroundColor: Color {
         if isEditable {
-            return colorScheme == .dark ? Color(UIColor.systemGray6) : Color(UIColor.systemGray6).opacity(0.5)
+            return colorScheme == .dark ? Color(UIColor.systemGray6) : Color.white
         } else {
-            // Çeviri sonucu için biraz daha açık bir arka plan
             return colorScheme == .dark ? 
-                Color(UIColor.systemGray5).opacity(0.7) : 
+                Color(UIColor.systemGray6) : 
                 Color(UIColor.systemGray6).opacity(0.3)
         }
     }
     
     var body: some View {
-        ModernTextEditor(
-            text: $text,
-            placeholder: placeholder,
-            isEditable: isEditable,
-            maxHeight: maxHeight,
-            onCommit: onCommit
-        )
-        .padding(4)
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(areaBackgroundColor)
-                .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
-        )
-        .frame(height: maxHeight + 16) // Padding için 16 ekliyoruz
+        VStack(alignment: .leading, spacing: 4) {
+            if !text.isEmpty && !isEditable {
+                Text(placeholder)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .padding(.leading, 4)
+            }
+            
+            ModernTextEditor(
+                text: $text,
+                placeholder: placeholder,
+                isEditable: isEditable,
+                maxHeight: maxHeight,
+                onCommit: onCommit
+            )
+            .padding(8)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(backgroundColor)
+                    .shadow(color: Color.black.opacity(0.03), radius: 2, x: 0, y: 1)
+            )
+        }
+        .frame(height: maxHeight + 28) // Padding ve etiket için fazladan alan
     }
 }
 
 #Preview {
-    VStack(spacing: 30) {
+    VStack(spacing: 20) {
         ModernTextEditor(
             text: .constant(""),
             placeholder: "Bir şeyler yazın...",
@@ -186,7 +180,7 @@ struct TranslateAreaTextEditor: View {
         )
         
         TranslateAreaTextEditor(
-            text: .constant("Bu çevrilmiş metin örneğidir. Şimdi arka plan ve kutu eklenmiş görünüm daha iyi."),
+            text: .constant("Bu çevrilmiş metin örneğidir."),
             placeholder: "Çeviri burada görünecek",
             isEditable: false,
             maxHeight: 150
