@@ -6,7 +6,7 @@ struct AppConfig {
     static var languages: [Language] = [
         Language(code: "en", name: "İngilizce"),
         Language(code: "tr", name: "Türkçe"),
-        Language(code: "es", name: "İspanyolca"),
+        Language(code: "pl", name: "lehçe"),
         Language(code: "fr", name: "Fransızca"),
         Language(code: "de", name: "Almanca"),
         Language(code: "it", name: "İtalyanca"),
@@ -16,6 +16,6 @@ struct AppConfig {
         Language(code: "ar", name: "Arapça"),
         Language(code: "pt", name: "Portekizce"),
         Language(code: "ko", name: "Korece"),
-        Language(code: "pl", name: "lehçe")
+        Language(code: "es", name: "ispanyolca")
     ]
 } 
