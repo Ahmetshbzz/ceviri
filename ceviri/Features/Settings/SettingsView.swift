@@ -23,163 +23,94 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                // API ANAHTARLARI
                 Section(header: Text("API Anahtarları")) {
-                    VStack(alignment: .leading) {
-                        Text("ElevenLabs API Anahtarı")
-                            .font(.headline)
-                            .padding(.top, 8)
-                        
-                        TextField("ElevenLabs API Anahtarı", text: $elevenLabsKey)
-                            .padding(12)
+                    // ElevenLabs
+                    LabeledContent("ElevenLabs") {
+                        TextField("API Anahtarı", text: $elevenLabsKey)
+                            .font(.footnote)
+                            .padding(6)
                             .background(colorScheme == .dark ? Color(UIColor.systemGray6) : Color.white)
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
+                            .cornerRadius(8)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
-                        
-                        Text("Ses dönüşümü için kullanılır")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 2)
                     }
-                    .padding(.vertical, 8)
                     
-                    VStack(alignment: .leading) {
-                        Text("Gemini API Anahtarı")
-                            .font(.headline)
-                            .padding(.top, 8)
-                        
-                        TextField("Gemini API Anahtarı", text: $geminiKey)
-                            .padding(12)
+                    // Gemini
+                    LabeledContent("Gemini") {
+                        TextField("API Anahtarı", text: $geminiKey)
+                            .font(.footnote)
+                            .padding(6)
                             .background(colorScheme == .dark ? Color(UIColor.systemGray6) : Color.white)
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
+                            .cornerRadius(8)
                             .autocorrectionDisabled()
                             .textInputAutocapitalization(.never)
-                        
-                        Text("Çeviri işlemleri için kullanılır")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 2)
                     }
-                    .padding(.vertical, 8)
-                }
-                
-                Section(header: Text("Ses Ayarları")) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Ses Seçimi")
-                            .font(.headline)
-                            .padding(.top, 8)
-                        
-                        if isLoadingVoices {
-                            HStack {
-                                Spacer()
-                                ProgressView()
-                                    .padding()
-                                Spacer()
-                            }
-                        } else if voiceLoadError {
-                            Text("Sesler yüklenemedi. Lütfen API anahtarınızı kontrol edin.")
-                                .foregroundColor(.red)
-                                .font(.subheadline)
-                        } else if voices.isEmpty {
-                            Button("Sesleri Yükle") {
-                                loadVoices()
-                            }
-                            .foregroundColor(.blue)
-                            .padding(.vertical, 8)
-                        } else {
-                            // Ses seçim açılır menüsü
-                            Picker("Varsayılan Ses", selection: $selectedVoiceID) {
-                                ForEach(voices) { voice in
-                                    HStack {
-                                        Text(voice.name)
-                                        if voice.category == "premade" {
-                                            Text("(Hazır)")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        } else {
-                                            Text("(Özel)")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                    }
-                                    .tag(voice.voice_id)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .padding(12)
-                            .background(colorScheme == .dark ? Color(UIColor.systemGray6) : Color.white)
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                            )
-                        }
-                        
-                        if !voices.isEmpty {
-                            Text("Çevirilerinizin seslendirilmesi için varsayılan ses")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .padding(.top, 2)
-                        }
-                    }
-                    .padding(.vertical, 8)
                     
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Ses Hızı")
-                            .font(.headline)
-                            .padding(.top, 8)
-                        
-                        HStack {
-                            Text("Yavaş")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            
-                            Slider(value: $playbackRate, in: 0.5...1.5, step: 0.05)
-                                .accentColor(.blue)
-                            
-                            Text("Hızlı")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack {
-                            Spacer()
-                            Text("Şu anki hız: \(String(format: "%.2f", playbackRate))x")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                        }
-                        .padding(.top, 4)
-                        
-                        Button("Varsayılan Hıza Sıfırla (0.85x)") {
-                            playbackRate = 0.85
-                            let impactGenerator = UIImpactFeedbackGenerator(style: .light)
-                            impactGenerator.impactOccurred()
-                        }
-                        .font(.footnote)
-                        .foregroundColor(.blue)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, 8)
-                    }
-                    .padding(.vertical, 8)
-                }
-                
-                Section {
                     Button("Varsayılan API Anahtarlarına Sıfırla") {
                         elevenLabsKey = AppConfig.elevenLabsAPIKey
                         geminiKey = AppConfig.geminiAPIKey
                     }
-                    .foregroundColor(.blue)
+                    .font(.footnote)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 
+                // SES AYARLARI
+                Section(header: Text("Ses Ayarları")) {
+                    // Ses Seçimi
+                    LabeledContent {
+                        if isLoadingVoices {
+                            ProgressView().scaleEffect(0.8)
+                        } else if voiceLoadError {
+                            Text("Yüklenemedi")
+                                .foregroundColor(.red)
+                                .font(.caption)
+                        } else if voices.isEmpty {
+                            Button("Sesleri Yükle") {
+                                loadVoices()
+                            }
+                            .font(.footnote)
+                        } else {
+                            Picker("", selection: $selectedVoiceID) {
+                                ForEach(voices) { voice in
+                                    Text("\(voice.name) \(voice.category == "premade" ? "✓" : "")")
+                                        .tag(voice.voice_id)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .labelsHidden()
+                        }
+                    } label: {
+                        Text("Ses Seçimi")
+                    }
+                    
+                    // Ses Hızı
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent {
+                            Text("\(String(format: "%.2f", playbackRate))x")
+                                .font(.footnote)
+                                .monospacedDigit()
+                        } label: {
+                            Text("Ses Hızı")
+                        }
+                        
+                        HStack(spacing: 8) {
+                            Text("0.5x").font(.caption)
+                            Slider(value: $playbackRate, in: 0.5...1.5, step: 0.05)
+                            Text("1.5x").font(.caption)
+                        }
+                        
+                        Button("Normal: 0.85x") {
+                            playbackRate = 0.85
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
+                        }
+                        .font(.caption)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
+                }
+                
+                // KAYDET BUTONU
                 Section {
                     Button {
                         saveSettings()
@@ -187,9 +118,9 @@ struct SettingsView: View {
                         Text("Kaydet")
                             .frame(maxWidth: .infinity)
                             .foregroundColor(.white)
-                            .padding(.vertical, 12)
+                            .padding(.vertical, 10)
                             .background(Color.blue)
-                            .cornerRadius(10)
+                            .cornerRadius(8)
                     }
                     .buttonStyle(PlainButtonStyle())
                     .listRowBackground(Color.clear)
@@ -247,7 +178,7 @@ struct SettingsView: View {
         UserDefaults.standard.setValue(playbackRate, forKey: "playbackRate")
         
         // Bilgi mesajı göster
-        alertMessage = "Ayarlar kaydedildi. Değişikliklerin etkin olması için uygulamayı yeniden başlatın."
+        alertMessage = "Ayarlar kaydedildi."
         showAlert = true
         
         // Kullanıcıya bildirim göndermek için haptic geri bildirim
