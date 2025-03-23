@@ -10,15 +10,8 @@ struct TranslationStateView: View {
                 loadingOverlay(message: "Çeviriliyor...")
             }
             
-            // Ses oluşturma göstergesi
-            if case .converting = viewModel.state {
-                loadingOverlay(message: "Ses oluşturuluyor...")
-            }
-            
-            // Ses oynatma göstergesi
-            if case .speaking = viewModel.state {
-                loadingOverlay(message: "Ses oynatılıyor...", systemImage: "speaker.wave.2.fill")
-            }
+            // Ses oluşturma ve oynatma durumlarında overlay gösterme
+            // Bu kısımları kaldırdık, çünkü DebugMessageView yeterli
             
             // Hata mesajı
             if case let .error(message) = viewModel.state {
