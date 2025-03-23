@@ -308,7 +308,7 @@ struct HistoryDetailView: View {
                         }
                     } label: {
                         Label(
-                            isPlaying ? "Durdur" : (isAudioCached ? "Dinle (Önbellekten)" : "Dinle"),
+                            isPlaying ? "Durdur" : (isAudioCached ? "Dinle" : "Dinle"),
                             systemImage: isPlaying ? "stop.fill" : "speaker.wave.2.fill"
                         )
                         .frame(maxWidth: .infinity)

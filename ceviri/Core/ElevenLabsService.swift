@@ -14,7 +14,7 @@ struct CachedAudio: Codable {
 }
 
 class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
-    private let apiKey = "sk_a7856b10a9a2455aebac7bfe210f139e9bba2c9e01186710"
+    private let apiKey = AppConfig.elevenLabsAPIKey
     private let baseURL = "https://api.elevenlabs.io/v1"
     private var audioPlayer: AVAudioPlayer?
     
@@ -283,6 +283,7 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
         
         audioPlayer = try AVAudioPlayer(data: data)
         audioPlayer?.delegate = self
+        audioPlayer?.rate = 0.85 // Ses hızını biraz daha yavaşlat (normal hız 1.0)
         audioPlayer?.prepareToPlay()
         audioPlayer?.play()
     }
