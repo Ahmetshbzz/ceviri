@@ -22,6 +22,8 @@ struct TranslationHistoryView: View {
                     if !historyService.searchText.isEmpty {
                         Button(action: {
                             historyService.searchText = ""
+                            let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+                            impactGenerator.impactOccurred()
                         }) {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.gray)
@@ -46,6 +48,8 @@ struct TranslationHistoryView: View {
                     Spacer()
                     
                     Button(action: {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
                         showClearAlert = true
                     }) {
                         Label("Temizle", systemImage: "trash")
@@ -83,6 +87,8 @@ struct TranslationHistoryView: View {
                                 }
                                 .swipeActions(edge: .trailing) {
                                     Button(role: .destructive) {
+                                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                        impactGenerator.impactOccurred()
                                         selectedItem = item
                                         showDeleteAlert = true
                                     } label: {
@@ -91,6 +97,8 @@ struct TranslationHistoryView: View {
                                 }
                                 .swipeActions(edge: .leading) {
                                     Button {
+                                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                                        impactGenerator.impactOccurred()
                                         historyService.toggleFavorite(for: item)
                                     } label: {
                                         Label(
@@ -110,6 +118,8 @@ struct TranslationHistoryView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Kapat") {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
                         dismiss()
                     }
                 }
@@ -124,6 +134,8 @@ struct TranslationHistoryView: View {
             .alert("Geçmiş Kaydını Sil", isPresented: $showDeleteAlert, presenting: selectedItem) { item in
                 Button("İptal", role: .cancel) {}
                 Button("Sil", role: .destructive) {
+                    let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                    impactGenerator.impactOccurred()
                     historyService.removeFromHistory(item: item)
                 }
             } message: { item in
@@ -132,6 +144,8 @@ struct TranslationHistoryView: View {
             .alert("Tüm Geçmişi Temizle", isPresented: $showClearAlert) {
                 Button("İptal", role: .cancel) {}
                 Button("Temizle", role: .destructive) {
+                    let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                    impactGenerator.impactOccurred()
                     historyService.clearHistory()
                 }
             } message: {
@@ -284,6 +298,9 @@ struct HistoryDetailView: View {
                 HStack(spacing: 20) {
                     // Ses oynatma butonu
                     Button {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
+                        
                         if isPlaying {
                             stopAudio()
                         } else {
@@ -305,6 +322,8 @@ struct HistoryDetailView: View {
                     
                     // Favorilere ekle/çıkar
                     Button {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
                         historyService.toggleFavorite(for: item)
                     } label: {
                         Label(
@@ -323,9 +342,11 @@ struct HistoryDetailView: View {
                 HStack(spacing: 20) {
                     // Kopyala
                     Button {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
                         UIPasteboard.general.string = item.translatedText
-                        let generator = UINotificationFeedbackGenerator()
-                        generator.notificationOccurred(.success)
+                        let notificationGenerator = UINotificationFeedbackGenerator()
+                        notificationGenerator.notificationOccurred(.success)
                     } label: {
                         Label("Kopyala", systemImage: "doc.on.doc")
                             .frame(maxWidth: .infinity)
@@ -337,6 +358,9 @@ struct HistoryDetailView: View {
                     
                     // Paylaş butonu
                     Button {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
+                        
                         let activityVC = UIActivityViewController(
                             activityItems: [item.translatedText],
                             applicationActivities: nil
@@ -359,6 +383,9 @@ struct HistoryDetailView: View {
                 
                 // Çeviride kullan butonu
                 Button {
+                    let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                    impactGenerator.impactOccurred()
+                    
                     // Geçmiş öğesini çeviride kullanmak için delegate'i bilgilendir
                     historyService.selectHistoryItem(item)
                     
@@ -381,6 +408,9 @@ struct HistoryDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Kapat") {
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
+                        
                         // Ses çalıyorsa durdur
                         if isPlaying {
                             stopAudio()
