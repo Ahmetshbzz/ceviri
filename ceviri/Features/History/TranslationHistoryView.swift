@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct TranslationHistoryView: View {
-    @StateObject private var historyService = TranslationHistoryService()
+    @ObservedObject var historyService: TranslationHistoryService
     @State private var showFavoritesOnly = false
     @State private var selectedItem: TranslationHistory?
     @State private var showDeleteAlert = false
@@ -115,7 +115,11 @@ struct TranslationHistoryView: View {
                 }
             }
             .sheet(item: $selectedItem) { item in
-                HistoryDetailView(item: item, historyService: historyService, dismiss: dismiss)
+                HistoryDetailView(
+                    item: item,
+                    historyService: historyService,
+                    dismiss: dismiss
+                )
             }
             .alert("Geçmiş Kaydını Sil", isPresented: $showDeleteAlert, presenting: selectedItem) { item in
                 Button("İptal", role: .cancel) {}

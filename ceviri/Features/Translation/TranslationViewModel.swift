@@ -35,8 +35,8 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     private var cancellables = Set<AnyCancellable>()
     private var audioData: Data?
     
-    // Geçmiş servisi
-    private let historyService: TranslationHistoryService
+    // Geçmiş servisi, artık public erişime açık
+    let historyService: TranslationHistoryService
     
     init() {
         // Önce tüm servisleri başlat

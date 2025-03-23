@@ -78,7 +78,7 @@ struct TranslationView: View {
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showHistoryView) {
-                TranslationHistoryView()
+                TranslationHistoryViewWrapper(viewModel: viewModel)
                     .presentationDragIndicator(.visible)
             }
             .overlay {
@@ -86,6 +86,16 @@ struct TranslationView: View {
                 TranslationStateView(viewModel: viewModel)
             }
         }
+    }
+}
+
+// Ana ekran ve geçmiş arasında köprü oluşturacak wrapper view
+struct TranslationHistoryViewWrapper: View {
+    let viewModel: TranslationViewModel
+    
+    var body: some View {
+        // Burada geçmiş ekranına ana view model'i geçiyoruz
+        TranslationHistoryView(historyService: viewModel.historyService)
     }
 }
 
