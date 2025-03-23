@@ -6,6 +6,7 @@ struct TranslationView: View {
     @State private var showSourceLanguageOptions = false
     @State private var showTargetLanguageOptions = false
     @State private var showHistoryView = false
+    @State private var showSettingsView = false
     @Environment(\.colorScheme) private var colorScheme
     
     private var backgroundColor: Color {
@@ -270,13 +271,19 @@ struct TranslationView: View {
                     }
                 }
             }
-            .navigationTitle("Ceviri")
+            .navigationTitle("Çeviri")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-                        impactGenerator.impactOccurred()
+                        showSettingsView = true
+                    } label: {
+                        Image(systemName: "gear")
+                    }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
                         showHistoryView = true
                     } label: {
                         Image(systemName: "clock.arrow.circlepath")
@@ -306,6 +313,9 @@ struct TranslationView: View {
             .sheet(isPresented: $showHistoryView) {
                 TranslationHistoryViewWrapper(viewModel: viewModel)
                     .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showSettingsView) {
+                SettingsView()
             }
             .overlay {
                 // Durum görünümleri

@@ -24,6 +24,16 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     private let defaultVoiceID = "21m00Tcm4TlvDq8ikWAM" // Rachel - Doğal kadın sesi
     private let defaultModelID = "eleven_multilingual_v2"
     
+    // Kullanıcı tarafından seçilen ses ID'sini al
+    var selectedVoiceID: String {
+        UserDefaults.standard.string(forKey: "selectedVoiceID") ?? defaultVoiceID
+    }
+    
+    // Kullanıcı tarafından ayarlanan ses hızını al (varsayılan 0.85)
+    var playbackRate: Float {
+        UserDefaults.standard.float(forKey: "playbackRate").isZero ? 0.85 : UserDefaults.standard.float(forKey: "playbackRate")
+    }
+    
     // Ses önbelleği ve zaman sınırı
     private var audioCache: [String: CachedAudio] = [:]
     private let cacheExpirationHours: TimeInterval = 24 // 24 saat sonra önbellek temizlenecek
@@ -206,7 +216,7 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
     }
     
     func convertTextToSpeech(text: String, voiceID: String? = nil, completion: @escaping (Result<Data, Error>) -> Void) {
-        let actualVoiceID = voiceID ?? defaultVoiceID
+        let actualVoiceID = voiceID ?? selectedVoiceID
         
         // Önbelleği kontrol et
         if let cachedData = getCachedAudio(text: text, voiceID: actualVoiceID) {
@@ -283,7 +293,7 @@ class ElevenLabsService: NSObject, AVAudioPlayerDelegate {
         
         audioPlayer = try AVAudioPlayer(data: data)
         audioPlayer?.delegate = self
-        audioPlayer?.rate = 0.85 // Ses hızını biraz daha yavaşlat (normal hız 1.0)
+        audioPlayer?.rate = playbackRate // Kullanıcı tarafından ayarlanan hızı kullan
         audioPlayer?.prepareToPlay()
         audioPlayer?.play()
     }

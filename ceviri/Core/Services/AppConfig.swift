@@ -1,8 +1,18 @@
 import Foundation
 
 struct AppConfig {
-    static let geminiAPIKey = "AIzaSyBiO0aft4Cxtt0tKFFS_GdLDXIQ71tV8MI"
-    static let elevenLabsAPIKey = "sk_a7856b10a9a2455aebac7bfe210f139e9bba2c9e01186710"
+    // Sabit API anahtarları (varsayılan değerler)
+    private static let defaultGeminiAPIKey = "AIzaSyBiO0aft4Cxtt0tKFFS_GdLDXIQ71tV8MI"
+    private static let defaultElevenLabsAPIKey = "sk_a7856b10a9a2455aebac7bfe210f139e9bba2c9e01186710"
+    
+    // UserDefaults'tan değerleri al, eğer yoksa varsayılan değerleri kullan
+    static var geminiAPIKey: String {
+        UserDefaults.standard.string(forKey: "geminiAPIKey") ?? defaultGeminiAPIKey
+    }
+    
+    static var elevenLabsAPIKey: String {
+        UserDefaults.standard.string(forKey: "elevenLabsAPIKey") ?? defaultElevenLabsAPIKey
+    }
     
     static var languages: [Language] = [
         Language(code: "en", name: "İngilizce"),
