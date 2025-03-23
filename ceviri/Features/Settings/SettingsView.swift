@@ -17,6 +17,9 @@ struct SettingsView: View {
     @State private var isLoadingVoices = false
     @State private var voiceLoadError = false
     
+    // Rachel sesi (manuel olarak eklendi)
+    private let rachelVoice = Voice(voice_id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel (Doğal Kadın Sesi)", category: "premade")
+    
     // Ses hızı ayarı için state
     @State private var playbackRate: Float = UserDefaults.standard.float(forKey: "playbackRate").isZero ? 0.85 : UserDefaults.standard.float(forKey: "playbackRate")
     
@@ -26,7 +29,7 @@ struct SettingsView: View {
                 // API ANAHTARLARI
                 Section(header: Text("API Anahtarları")) {
                     // ElevenLabs
-                    LabeledContent("ElevenLabs") {
+                    LabeledContent("ElevenLabs API") {
                         TextField("API Anahtarı", text: $elevenLabsKey)
                             .font(.footnote)
                             .padding(6)
@@ -37,7 +40,7 @@ struct SettingsView: View {
                     }
                     
                     // Gemini
-                    LabeledContent("Gemini") {
+                    LabeledContent("Gemini API") {
                         TextField("API Anahtarı", text: $geminiKey)
                             .font(.footnote)
                             .padding(6)
@@ -65,16 +68,19 @@ struct SettingsView: View {
                             Text("Yüklenemedi")
                                 .foregroundColor(.red)
                                 .font(.caption)
-                        } else if voices.isEmpty {
-                            Button("Sesleri Yükle") {
-                                loadVoices()
-                            }
-                            .font(.footnote)
                         } else {
                             Picker("", selection: $selectedVoiceID) {
-                                ForEach(voices) { voice in
-                                    Text("\(voice.name) \(voice.category == "premade" ? "✓" : "")")
-                                        .tag(voice.voice_id)
+                                // Rachel sesini manuel olarak ekliyoruz
+                                Text("\(rachelVoice.name) ⭐")
+                                    .tag(rachelVoice.voice_id)
+                                
+                                // Diğer sesler
+                                if !voices.isEmpty {
+                                    Divider()
+                                    ForEach(voices.filter { $0.voice_id != rachelVoice.voice_id }) { voice in
+                                        Text("\(voice.name) \(voice.category == "premade" ? "✓" : "")")
+                                            .tag(voice.voice_id)
+                                    }
                                 }
                             }
                             .pickerStyle(.menu)
@@ -158,7 +164,8 @@ struct SettingsView: View {
                 
                 switch result {
                 case .success(let retrievedVoices):
-                    voices = retrievedVoices
+                    // Rachel sesini içermeyen sesleri filtreleyerek alıyoruz
+                    voices = retrievedVoices.filter { $0.voice_id != rachelVoice.voice_id }
                 case .failure(_):
                     voiceLoadError = true
                 }
