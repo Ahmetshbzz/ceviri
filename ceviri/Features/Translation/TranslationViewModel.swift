@@ -102,8 +102,18 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
         }
     }
     
+    // Klavyeyi kapat
+    func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
     func translate() async {
         guard !inputText.isEmpty else { return }
+        
+        // Klavyeyi kapat
+        await MainActor.run {
+            dismissKeyboard()
+        }
         
         logger.info("Çeviri başlatılıyor...")
         await MainActor.run {
@@ -152,6 +162,9 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
     // ElevenLabs ile çevrilmiş metni sese dönüştür
     func convertTextToSpeech() {
         guard !translatedText.isEmpty else { return }
+        
+        // Klavyeyi kapat
+        dismissKeyboard()
         
         // Eğer zaten konuşuyorsa, durdur
         if case .speaking = state {
@@ -288,6 +301,11 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate {
     func swapLanguages() async {
         // Otomatik dil algılama seçiliyse ya da çeviri boşsa işlem yapılmaz
         guard selectedSourceLanguage.code != "auto" && !translatedText.isEmpty else { return }
+        
+        // Klavyeyi kapat
+        await MainActor.run {
+            dismissKeyboard()
+        }
         
         let tempText = translatedText
         let tempSourceLang = selectedSourceLanguage
