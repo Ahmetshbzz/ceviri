@@ -1,4 +1,62 @@
 import SwiftUI
+import UIKit
+
+// UIKit TextEditor temsilcisi - Yatay kaydırma desteği için
+struct UIKitTextEditor: UIViewRepresentable {
+    @Binding var text: String
+    let isEditable: Bool
+    var onCommit: (() -> Void)?
+    
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.delegate = context.coordinator
+        textView.isEditable = isEditable
+        textView.isSelectable = true
+        textView.isScrollEnabled = true
+        textView.showsHorizontalScrollIndicator = true  // Yatay kaydırma göstergesi
+        textView.font = UIFont.systemFont(ofSize: 16)
+        textView.backgroundColor = .clear
+        textView.textContainerInset = UIEdgeInsets(top: 4, left: 2, bottom: 4, right: 2)
+        
+        // Önemli: Bu satır yatay kaydırmayı etkinleştiriyor
+        textView.textContainer.lineBreakMode = .byCharWrapping
+        textView.textContainer.widthTracksTextView = false
+        
+        return textView
+    }
+    
+    func updateUIView(_ uiView: UITextView, context: Context) {
+        uiView.text = text
+        uiView.isEditable = isEditable
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text, onCommit: onCommit)
+    }
+    
+    class Coordinator: NSObject, UITextViewDelegate {
+        var text: Binding<String>
+        var onCommit: (() -> Void)?
+        
+        init(text: Binding<String>, onCommit: (() -> Void)?) {
+            self.text = text
+            self.onCommit = onCommit
+        }
+        
+        func textViewDidChange(_ textView: UITextView) {
+            text.wrappedValue = textView.text
+        }
+        
+        func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+            if text == "\n" && onCommit != nil {
+                onCommit?()
+                textView.resignFirstResponder()
+                return false
+            }
+            return true
+        }
+    }
+}
 
 struct ModernTextEditor: View {
     @Binding var text: String
@@ -40,16 +98,8 @@ struct ModernTextEditor: View {
             }
             
             ZStack(alignment: .topLeading) {
-                TextEditor(text: $text)
-                    .focused($isFocused)
-                    .disabled(!isEditable)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.clear)
-                    .font(.system(size: 16))
-                    .fontWeight(.regular)
-                    .tint(.blue)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 6)
+                // TextEditor yerine UIKitTextEditor kullanıyoruz
+                UIKitTextEditor(text: $text, isEditable: isEditable, onCommit: onCommit)
                     .frame(height: maxHeight)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
@@ -59,18 +109,6 @@ struct ModernTextEditor: View {
                     .onTapGesture {
                         if isEditable {
                             isFocused = true
-                        }
-                    }
-                    .onChange(of: text) { oldValue, newValue in
-                        // Enter tuşuna basıldığında işlem yap
-                        if newValue.contains("\n") && isEditable && onCommit != nil {
-                            let lastChar = newValue.last
-                            text = String(newValue.dropLast())
-                            
-                            if lastChar == "\n" {
-                                isFocused = false
-                                onCommit?()
-                            }
                         }
                     }
                 
@@ -116,6 +154,7 @@ struct TranslateAreaTextEditor: View {
                     .padding(.leading, 4)
             }
             
+            // ModernTextEditor'ü direkt olarak kullanıyoruz
             ModernTextEditor(
                 text: $text,
                 placeholder: placeholder,
