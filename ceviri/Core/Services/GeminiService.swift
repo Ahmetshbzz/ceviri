@@ -49,15 +49,15 @@ class GeminiService {
             Lütfen aşağıdaki metni \(targetLanguageForPrompt) diline çevir.
 
             ÖNEMLİ KURALLAR:
-            1. Çevirini doğal ve akıcı olmalı, makine çevirisi gibi hissettirmemeli.
-            2. Günlük konuşma dilinde cevap ver, resmi bir dil kullanma.
+            1. Çevirini çok doğal ve samimi bir dilde yap, arkadaşınla konuşuyormuş gibi.
+            2. Günlük konuşma dilinde, sokakta konuşulduğu gibi çevir, kesinlikle resmi bir dil kullanma.
             3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
-            4. Metindeki tüm anlamları ve nüansları koru.
-            5. Cümleyi düzgün bir şekilde yeniden yapılandır, kelime kelime çevirme.
-            6. Google Translate'in yapacağı gibi mekanik bir çeviri yapma.
+            4. Metindeki tüm anlamları ve nüansları koru ama daha samimi hale getir.
+            5. Cümleyi düzgün bir şekilde yeniden yapılandır, günlük hayatta kullanılan ifadeler kullan.
+            6. Argo ifadeler ve günlük kısaltmalar kullanabilirsin, çok katı kurallara bağlı kalma.
             7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
 
-            Sen bir çeviri uzmanısın ama resmi bir dil kullanmıyorsun. Doğal, günlük konuşma diline uygun çeviriler yapıyorsun.
+            Sen samimi bir arkadaşsın, resmi bir dil asla kullanmazsın. Doğal, günlük sokak dilinde konuşursun.
 
             Metni çevir:
             \(text)
@@ -67,15 +67,15 @@ class GeminiService {
             Lütfen aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguageForPrompt) diline çevir.
 
             ÖNEMLİ KURALLAR:
-            1. Çevirini doğal ve akıcı olmalı, makine çevirisi gibi hissettirmemeli.
-            2. Günlük konuşma dilinde cevap ver, resmi bir dil kullanma.
+            1. Çevirini çok doğal ve samimi bir dilde yap, arkadaşınla konuşuyormuş gibi.
+            2. Günlük konuşma dilinde, sokakta konuşulduğu gibi çevir, kesinlikle resmi bir dil kullanma.
             3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
-            4. Metindeki tüm anlamları ve nüansları koru.
-            5. Cümleyi düzgün bir şekilde yeniden yapılandır, kelime kelime çevirme.
-            6. Google Translate'in yapacağı gibi mekanik bir çeviri yapma.
+            4. Metindeki tüm anlamları ve nüansları koru ama daha samimi hale getir.
+            5. Cümleyi düzgün bir şekilde yeniden yapılandır, günlük hayatta kullanılan ifadeler kullan.
+            6. Argo ifadeler ve günlük kısaltmalar kullanabilirsin, çok katı kurallara bağlı kalma.
             7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
 
-            Sen bir çeviri uzmanısın ama resmi bir dil kullanmıyorsun. Doğal, günlük konuşma diline uygun çeviriler yapıyorsun.
+            Sen samimi bir arkadaşsın, resmi bir dil asla kullanmazsın. Doğal, günlük sokak dilinde konuşursun.
 
             Metni çevir:
             \(text)
@@ -96,8 +96,8 @@ class GeminiService {
                 ]
             ],
             "generationConfig": [
-                "temperature": 0.3,
-                "topP": 0.9,
+                "temperature": 0.7,
+                "topP": 0.95,
                 "topK": 40
             ]
         ]

@@ -2,8 +2,8 @@ import Foundation
 
 struct AppConfig {
     // Sabit API anahtarları (varsayılan değerler)
-    private static let defaultGeminiAPIKey = ""
-    private static let defaultElevenLabsAPIKey = ""
+    private static let defaultGeminiAPIKey = "AIzaSyBiO0aft4Cxtt0tKFFS_GdLDXIQ71tV8MI"
+    private static let defaultElevenLabsAPIKey = "sk_a7856b10a9a2455aebac7bfe210f139e9bba2c9e01186710"
     private static let defaultOpenAIAPIKey = ""
 
     // UserDefaults'tan değerleri al, eğer yoksa varsayılan değerleri kullan

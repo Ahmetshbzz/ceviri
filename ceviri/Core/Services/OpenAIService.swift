@@ -48,12 +48,12 @@ class OpenAIService {
             Lütfen aşağıdaki metni \(targetLanguageForPrompt) diline çevir.
 
             ÖNEMLİ KURALLAR:
-            1. Çevirini doğal ve akıcı olmalı, makine çevirisi gibi hissettirmemeli.
-            2. Günlük konuşma dilinde cevap ver, resmi bir dil değil.
+            1. Çevirini doğru ve akıcı yap, fakat standart dil kurallarına uygun olsun.
+            2. Profesyonel bir dil kullan, çok fazla günlük konuşma diline kaçma.
             3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
             4. Metindeki tüm anlamları ve nüansları koru.
-            5. Cümleyi düzgün bir şekilde yeniden yapılandır, kelime kelime çevirme.
-            6. Google Translate'in yapacağı gibi mekanik bir çeviri yapma.
+            5. Dilbilgisi kurallarına uygun, düzgün cümleler kullan.
+            6. Standart yazı dilinde çeviri yap, argo veya sokak dili kullanma.
             7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
 
             Metni çevir:
@@ -64,12 +64,12 @@ class OpenAIService {
             Lütfen aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguageForPrompt) diline çevir.
 
             ÖNEMLİ KURALLAR:
-            1. Çevirini doğal ve akıcı olmalı, makine çevirisi gibi hissettirmemeli.
-            2. Günlük konuşma dilinde cevap ver, resmi bir dil değil.
+            1. Çevirini doğru ve akıcı yap, fakat standart dil kurallarına uygun olsun.
+            2. Profesyonel bir dil kullan, çok fazla günlük konuşma diline kaçma.
             3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
             4. Metindeki tüm anlamları ve nüansları koru.
-            5. Cümleyi düzgün bir şekilde yeniden yapılandır, kelime kelime çevirme.
-            6. Google Translate'in yapacağı gibi mekanik bir çeviri yapma.
+            5. Dilbilgisi kurallarına uygun, düzgün cümleler kullan.
+            6. Standart yazı dilinde çeviri yap, argo veya sokak dili kullanma.
             7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
 
             Metni çevir:
@@ -79,12 +79,12 @@ class OpenAIService {
         logger.debug("Oluşturulan prompt: \(prompt)")
 
         // API isteği için gerekli istek gövdesini oluştur - OpenAI API formatı
-        let requestBody: [String: Any] = [
-            "model": "o1",  // En doğru çeviri modeli (Mayıs 2025 itibariyle) - güncellendi
+        var requestBody: [String: Any] = [
+            "model": "gpt-4.1",  // En yüksek çeviri kalitesi sunan model (Mayıs 2025)
             "messages": [
                 [
                     "role": "system",
-                    "content": "Sen profesyonel bir çevirmensin ama resmi değilsin. Metinleri doğru, akıcı ve doğal bir konuşma dilinde çevirirsin. Çevirilerin makine çevirisi gibi hissettirmemeli, bir insanın konuşması gibi olmalı. Metinlerin anlamını, nüanslarını ve tonunu korursun. Kelimesi kelimesine çeviri yapmak yerine, hedef dilde doğal karşılıklarını bulursun."
+                    "content": "Sen profesyonel bir çevirmensin. Metinleri doğru, akıcı ve standart dilde çevirirsin. Çevirilerin dilbilgisi kurallarına uygun olmalı. Metinlerin anlamını ve nüanslarını korursun, ancak standart yazı dilini tercih edersin."
                 ],
                 [
                     "role": "user",
@@ -92,7 +92,7 @@ class OpenAIService {
                 ]
             ],
             "temperature": 0.3,
-            "top_p": 0.9
+            "top_p": 0.95
         ]
 
         var request = URLRequest(url: url)
@@ -231,8 +231,8 @@ class OpenAIService {
         logger.debug("Oluşturulan prompt: \(prompt)")
 
         // API isteği için gerekli istek gövdesini oluştur - OpenAI API formatı
-        let requestBody: [String: Any] = [
-            "model": "o1",  // En doğru çeviri modeli (Mayıs 2025 itibariyle) - güncellendi
+        var requestBody: [String: Any] = [
+            "model": "gpt-4.1",  // En yüksek çeviri kalitesi sunan model (Mayıs 2025)
             "messages": [
                 [
                     "role": "system",
