@@ -2,8 +2,9 @@ import Foundation
 import SwiftUI
 import Combine
 import os
+import UIKit  // UIApplication için gerekli
 
-enum TranslationState {
+enum TranslationState: Equatable {
     case idle
     case detecting
     case translating
@@ -11,10 +12,26 @@ enum TranslationState {
     case speaking
     case success
     case error(String)
+
+    static func == (lhs: TranslationState, rhs: TranslationState) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle),
+             (.detecting, .detecting),
+             (.translating, .translating),
+             (.converting, .converting),
+             (.speaking, .speaking),
+             (.success, .success):
+            return true
+        case (.error(let lhsMessage), .error(let rhsMessage)):
+            return lhsMessage == rhsMessage
+        default:
+            return false
+        }
+    }
 }
 
 class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, TranslationHistoryDelegate {
-    private let geminiService: GeminiService
+    private let translationManager = TranslationManager.shared
     private let elevenLabsService: ElevenLabsService
     private let logger = Logger(subsystem: "com.app.ceviri", category: "TranslationViewModel")
 
@@ -40,13 +57,11 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     let historyService: TranslationHistoryService
 
     init() {
-        // Önce tüm servisleri başlat
-        if AppConfig.geminiAPIKey.isEmpty || AppConfig.geminiAPIKey == "API_ANAHTARINIZI_BURAYA_YAZIN" {
-            self.geminiService = GeminiService(apiKey: "")
-            logger.error("⚠️ API anahtarı ayarlanmamış! AppConfig.swift dosyasında geminiAPIKey değerini güncellemelisiniz.")
-            debugMessage = "⚠️ API anahtarı ayarlanmamış! AppConfig.swift dosyasında geminiAPIKey değerini güncellemelisiniz."
+        // API anahtarı kontrolü
+        if AppConfig.geminiAPIKey.isEmpty && AppConfig.openAIAPIKey.isEmpty {
+            logger.error("⚠️ API anahtarı ayarlanmamış! Ayarlar ekranından API anahtarlarını güncellemelisiniz.")
+            debugMessage = "⚠️ API anahtarı ayarlanmamış! Ayarlar ekranından API anahtarlarını güncellemelisiniz."
         } else {
-            self.geminiService = GeminiService(apiKey: AppConfig.geminiAPIKey)
             logger.info("TranslationViewModel başlatıldı")
         }
 
@@ -103,34 +118,6 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
         }
     }
 
-    func detectLanguage() async {
-        guard !inputText.isEmpty && selectedSourceLanguage.code == "auto" else { return }
-
-        logger.info("Dil algılama başlatılıyor...")
-        await MainActor.run {
-            state = .detecting
-        }
-
-        do {
-            let languageCode = try await geminiService.detectLanguage(text: inputText)
-
-            await MainActor.run {
-                self.detectedLanguage = languageCode
-                self.state = .idle
-                logger.info("Dil algılandı: \(languageCode)")
-            }
-        } catch let error as GeminiError {
-            await handleError(error: error, context: "dil tespiti")
-        } catch {
-            await handleError(error: error, context: "dil tespiti")
-        }
-    }
-
-    // Klavyeyi kapat
-    func dismissKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-
     func translate() async {
         guard !inputText.isEmpty else { return }
 
@@ -164,8 +151,8 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
                 return
             }
 
-            // Çeviriyi yap
-            let translatedText = try await geminiService.translateText(
+            // Çeviriyi yap (artık TranslationManager kullanarak)
+            let translatedText = try await translationManager.translateText(
                 text: inputText,
                 sourceLanguage: sourceLanguage,
                 targetLanguage: selectedTargetLanguage.name
@@ -186,10 +173,8 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
                 self.debugMessage = ""
                 logger.info("Çeviri başarılı")
             }
-        } catch let error as GeminiError {
-            await handleError(error: error, context: "çeviri")
         } catch {
-            await handleError(error: error, context: "çeviri")
+            await handleTranslationError(error, context: "çeviri")
         }
     }
 
@@ -310,16 +295,32 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
         debugMessage = "‼️ Ses oluşturma hatası: \(error.localizedDescription)"
     }
 
-    private func handleError(error: Error, context: String) async {
+    private func handleTranslationError(_ error: Error, context: String) async {
         await MainActor.run {
             let errorMessage: String
 
+            // Hem GeminiError hem de OpenAIError için durum kontrolü yap
             if let geminiError = error as? GeminiError {
                 switch geminiError {
                 case .emptyAPIKey:
-                    errorMessage = "API anahtarı boş! AppConfig.swift dosyasında geminiAPIKey değerini güncellemelisiniz."
+                    errorMessage = "API anahtarı boş! Ayarlar'dan bir API anahtarı ekleyin."
                 case .apiError(let message):
                     errorMessage = "API hatası: \(message)"
+                case .invalidURL:
+                    errorMessage = "Geçersiz URL"
+                case .invalidResponse:
+                    errorMessage = "Geçersiz API yanıtı"
+                case .networkError(let err):
+                    errorMessage = "Ağ hatası: \(err.localizedDescription)"
+                case .decodingError(let err):
+                    errorMessage = "Yanıt çözümleme hatası: \(err.localizedDescription)"
+                }
+            } else if let openAIError = error as? OpenAIError {
+                switch openAIError {
+                case .emptyAPIKey:
+                    errorMessage = "OpenAI API anahtarı boş! Ayarlar'dan bir API anahtarı ekleyin."
+                case .apiError(let message):
+                    errorMessage = "OpenAI API hatası: \(message)"
                 case .invalidURL:
                     errorMessage = "Geçersiz URL"
                 case .invalidResponse:
@@ -420,5 +421,47 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
         } else {
             return getDetectedLanguageName()
         }
+    }
+
+    // Dil tespiti için metot
+    func detectLanguage() async {
+        guard !inputText.isEmpty else { return }
+
+        // Eğer kaynak dil "auto" değilse, algılamaya gerek yok
+        if selectedSourceLanguage.code != "auto" {
+            await MainActor.run {
+                detectedLanguage = selectedSourceLanguage.code
+            }
+            return
+        }
+
+        await MainActor.run {
+            state = .detecting
+            debugMessage = "Dil algılanıyor..."
+        }
+
+        do {
+            // TranslationManager kullanarak dil tespiti yap
+            let detectedCode = try await translationManager.detectLanguage(text: inputText)
+            await MainActor.run {
+                self.detectedLanguage = detectedCode
+                if self.state == .detecting {
+                    self.state = .idle
+                }
+                self.debugMessage = "Algılanan dil: \(self.getDetectedLanguageName())"
+                logger.info("Dil algılandı: \(detectedCode)")
+            }
+        } catch {
+            await MainActor.run {
+                self.state = .error("Dil algılama hatası")
+                self.debugMessage = "Dil algılama hatası: \(error.localizedDescription)"
+                logger.error("Dil algılama hatası: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    // Klavyeyi kapat
+    func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

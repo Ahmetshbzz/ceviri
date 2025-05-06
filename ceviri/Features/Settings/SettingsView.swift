@@ -3,6 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @State private var elevenLabsKey: String = UserDefaults.standard.string(forKey: "elevenLabsAPIKey") ?? AppConfig.elevenLabsAPIKey
     @State private var geminiKey: String = UserDefaults.standard.string(forKey: "geminiAPIKey") ?? AppConfig.geminiAPIKey
+    @State private var openAIKey: String = UserDefaults.standard.string(forKey: "openAIAPIKey") ?? AppConfig.openAIAPIKey
+    @State private var translationService: String = UserDefaults.standard.string(forKey: "translationService") ?? "gemini"
     @State private var showAlert = false
     @State private var alertMessage = ""
     @Environment(\.dismiss) private var dismiss
@@ -27,6 +29,22 @@ struct SettingsView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 32) {
+                    // ÇEVİRİ SERVİSİ SEÇİMİ
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Çeviri Servisi")
+                            .font(.title3)
+                            .fontWeight(.medium)
+
+                        Picker("Çeviri Servisi", selection: $translationService) {
+                            Text("Gemini AI").tag("gemini")
+                            Text("OpenAI").tag("openai")
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.bottom, 8)
+                    }
+
+                    Divider()
+
                     // API ANAHTARLARI
                     VStack(alignment: .leading, spacing: 24) {
                         Text("API Anahtarları")
@@ -47,9 +65,17 @@ struct SettingsView: View {
                             placeholder: "API Anahtarı"
                         )
 
+                        // OpenAI
+                        MinimalTextField(
+                            title: "OpenAI API",
+                            text: $openAIKey,
+                            placeholder: "API Anahtarı"
+                        )
+
                         Button {
                             elevenLabsKey = AppConfig.elevenLabsAPIKey
                             geminiKey = AppConfig.geminiAPIKey
+                            openAIKey = AppConfig.openAIAPIKey
                             let generator = UIImpactFeedbackGenerator(style: .light)
                             generator.impactOccurred()
                         } label: {
@@ -238,12 +264,19 @@ struct SettingsView: View {
         // API anahtarlarını UserDefaults'a kaydet
         UserDefaults.standard.setValue(elevenLabsKey, forKey: "elevenLabsAPIKey")
         UserDefaults.standard.setValue(geminiKey, forKey: "geminiAPIKey")
+        UserDefaults.standard.setValue(openAIKey, forKey: "openAIAPIKey")
+
+        // Çeviri servisini kaydet
+        UserDefaults.standard.setValue(translationService, forKey: "translationService")
 
         // Seçilen sesi kaydet
         UserDefaults.standard.setValue(selectedVoiceID, forKey: "selectedVoiceID")
 
         // Ses hızını kaydet
         UserDefaults.standard.setValue(playbackRate, forKey: "playbackRate")
+
+        // TranslationManager servislerini yenile
+        TranslationManager.shared.refreshAPIKeys()
 
         // Bilgi mesajı göster
         alertMessage = "Ayarlar kaydedildi."
