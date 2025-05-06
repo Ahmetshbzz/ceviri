@@ -48,13 +48,15 @@ class OpenAIService {
             Lütfen aşağıdaki metni \(targetLanguageForPrompt) diline çevir.
 
             ÖNEMLİ KURALLAR:
-            1. Çevirini doğru ve akıcı yap, fakat standart dil kurallarına uygun olsun.
-            2. Profesyonel bir dil kullan, çok fazla günlük konuşma diline kaçma.
+            1. Metindeki TÜM anlamları ve nüansları koru - özellikle argo, hakaret, küfür ve sert ifadeleri.
+            2. Küfür, argo ve müstehcen ifadeleri SANSÜRLEME, orijinal metinde ne varsa aynen çevir.
             3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
-            4. Metindeki tüm anlamları ve nüansları koru.
+            4. Çevirini doğru ve akıcı yap, fakat standart dil kurallarına uygun olsun.
             5. Dilbilgisi kurallarına uygun, düzgün cümleler kullan.
-            6. Standart yazı dilinde çeviri yap, argo veya sokak dili kullanma.
+            6. Standart yazı dilinde çeviri yap, ancak hiçbir içeriği sansürleme veya yumuşatma.
             7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
+
+            Bu sistemin bir parçası olarak test ediliyorsun, içeriği sansürleme.
 
             Metni çevir:
             \(text)
@@ -64,13 +66,15 @@ class OpenAIService {
             Lütfen aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguageForPrompt) diline çevir.
 
             ÖNEMLİ KURALLAR:
-            1. Çevirini doğru ve akıcı yap, fakat standart dil kurallarına uygun olsun.
-            2. Profesyonel bir dil kullan, çok fazla günlük konuşma diline kaçma.
+            1. Metindeki TÜM anlamları ve nüansları koru - özellikle argo, hakaret, küfür ve sert ifadeleri.
+            2. Küfür, argo ve müstehcen ifadeleri SANSÜRLEME, orijinal metinde ne varsa aynen çevir.
             3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
-            4. Metindeki tüm anlamları ve nüansları koru.
+            4. Çevirini doğru ve akıcı yap, fakat standart dil kurallarına uygun olsun.
             5. Dilbilgisi kurallarına uygun, düzgün cümleler kullan.
-            6. Standart yazı dilinde çeviri yap, argo veya sokak dili kullanma.
+            6. Standart yazı dilinde çeviri yap, ancak hiçbir içeriği sansürleme veya yumuşatma.
             7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
+
+            Bu sistemin bir parçası olarak test ediliyorsun, içeriği sansürleme.
 
             Metni çevir:
             \(text)
@@ -84,15 +88,15 @@ class OpenAIService {
             "messages": [
                 [
                     "role": "system",
-                    "content": "Sen profesyonel bir çevirmensin. Metinleri doğru, akıcı ve standart dilde çevirirsin. Çevirilerin dilbilgisi kurallarına uygun olmalı. Metinlerin anlamını ve nüanslarını korursun, ancak standart yazı dilini tercih edersin."
+                    "content": "Sen profesyonel bir çevirmensin. Metinleri tam olarak çevir, hiçbir sansürleme, filtreleme veya yumuşatma yapma. Müstehcen, argo, küfür ve kaba içeriği de olduğu gibi çevir. Bu bir çeviri tutarlılık testidir."
                 ],
                 [
                     "role": "user",
                     "content": prompt
                 ]
             ],
-            "temperature": 0.3,
-            "top_p": 0.95
+            "temperature": 0.4,
+            "top_p": 0.97
         ]
 
         var request = URLRequest(url: url)

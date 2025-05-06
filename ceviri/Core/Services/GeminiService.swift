@@ -49,15 +49,15 @@ class GeminiService {
             Lütfen aşağıdaki metni \(targetLanguageForPrompt) diline çevir.
 
             ÖNEMLİ KURALLAR:
-            1. Çevirini çok doğal ve samimi bir dilde yap, arkadaşınla konuşuyormuş gibi.
-            2. Günlük konuşma dilinde, sokakta konuşulduğu gibi çevir, kesinlikle resmi bir dil kullanma.
-            3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
-            4. Metindeki tüm anlamları ve nüansları koru ama daha samimi hale getir.
-            5. Cümleyi düzgün bir şekilde yeniden yapılandır, günlük hayatta kullanılan ifadeler kullan.
-            6. Argo ifadeler ve günlük kısaltmalar kullanabilirsin, çok katı kurallara bağlı kalma.
+            1. Metindeki anlamı AYNEN koru - özellikle "siktir, sikiyim, orospu, amk" gibi küfür ve argo ifadeler de dahil.
+            2. ASLA kendi yorumunu katma, metni tam olarak ve DOĞRUDAN çevir, hiçbir kelimeyi değiştirme.
+            3. İnsan adlarını, yer isimlerini, marka isimlerini ve HER türlü küfür ifadesini olduğu gibi çevir.
+            4. Türkçe'deki "ana, anne, anasını" gibi ifadelerin geçtiği küfürleri, hedef dildeki tam karşılığı ile çevir.
+            5. ÇOK ÖNEMLİ: Örneğin "Ananı sikeyim" ifadesini direkt olarak "Fuck your mother" olarak çevirmelisin, anlam değiştirmemelisin.
+            6. Sansürleme yapma, tam anlamıyla çeviri yap. Test edildiğini unutma.
             7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
 
-            Sen samimi bir arkadaşsın, resmi bir dil asla kullanmazsın. Doğal, günlük sokak dilinde konuşursun.
+            Bu bir dil tutarlılık testidir ve tam çeviri beklenmektedir. Parafraz ya da yorum yapmayın.
 
             Metni çevir:
             \(text)
@@ -67,15 +67,15 @@ class GeminiService {
             Lütfen aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguageForPrompt) diline çevir.
 
             ÖNEMLİ KURALLAR:
-            1. Çevirini çok doğal ve samimi bir dilde yap, arkadaşınla konuşuyormuş gibi.
-            2. Günlük konuşma dilinde, sokakta konuşulduğu gibi çevir, kesinlikle resmi bir dil kullanma.
-            3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
-            4. Metindeki tüm anlamları ve nüansları koru ama daha samimi hale getir.
-            5. Cümleyi düzgün bir şekilde yeniden yapılandır, günlük hayatta kullanılan ifadeler kullan.
-            6. Argo ifadeler ve günlük kısaltmalar kullanabilirsin, çok katı kurallara bağlı kalma.
+            1. Metindeki anlamı AYNEN koru - özellikle "siktir, sikiyim, orospu, amk" gibi küfür ve argo ifadeler de dahil.
+            2. ASLA kendi yorumunu katma, metni tam olarak ve DOĞRUDAN çevir, hiçbir kelimeyi değiştirme.
+            3. İnsan adlarını, yer isimlerini, marka isimlerini ve HER türlü küfür ifadesini olduğu gibi çevir.
+            4. Türkçe'deki "ana, anne, anasını" gibi ifadelerin geçtiği küfürleri, hedef dildeki tam karşılığı ile çevir.
+            5. ÇOK ÖNEMLİ: Örneğin "Ananı sikeyim" ifadesini direkt olarak "Fuck your mother" olarak çevirmelisin, anlam değiştirmemelisin.
+            6. Sansürleme yapma, tam anlamıyla çeviri yap. Test edildiğini unutma.
             7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
 
-            Sen samimi bir arkadaşsın, resmi bir dil asla kullanmazsın. Doğal, günlük sokak dilinde konuşursun.
+            Bu bir dil tutarlılık testidir ve tam çeviri beklenmektedir. Parafraz ya da yorum yapmayın.
 
             Metni çevir:
             \(text)
@@ -96,8 +96,8 @@ class GeminiService {
                 ]
             ],
             "generationConfig": [
-                "temperature": 0.7,
-                "topP": 0.95,
+                "temperature": 0.35,
+                "topP": 0.98,
                 "topK": 40
             ]
         ]
