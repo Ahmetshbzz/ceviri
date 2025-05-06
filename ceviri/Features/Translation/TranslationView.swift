@@ -8,17 +8,17 @@ struct TranslationView: View {
     @State private var showHistoryView = false
     @State private var showSettingsView = false
     @Environment(\.colorScheme) private var colorScheme
-    
+
     private var backgroundColor: Color {
         colorScheme == .dark ? Color.black.opacity(0.8) : Color(UIColor.systemGroupedBackground)
     }
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 // Arka plan rengi
                 backgroundColor.ignoresSafeArea()
-                
+
                 // Ana içerik
                 ScrollView {
                     VStack(spacing: 16) {
@@ -31,7 +31,32 @@ struct TranslationView: View {
                             isInputFocused = focused
                         }
                     )
-                    
+
+                    // Çeviri Stili Seçimi
+                    HStack {
+                        Spacer()
+
+                        Button {
+                            viewModel.toggleModelStyle()
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: viewModel.isInformalStyle ? "person.2.fill" : "building.2.fill")
+                                    .font(.caption)
+                                Text(viewModel.getModelStyleText())
+                                    .font(.footnote)
+                            }
+                            .padding(.vertical, 6)
+                            .padding(.horizontal, 10)
+                            .background(
+                                Capsule()
+                                    .fill(viewModel.isInformalStyle ? Color.purple.opacity(0.15) : Color.blue.opacity(0.15))
+                            )
+                            .foregroundColor(viewModel.isInformalStyle ? .purple : .blue)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 4)
+
                         // Giriş kartı
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
@@ -42,7 +67,7 @@ struct TranslationView: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
-                            
+
                             TranslateAreaTextEditor(
                                 text: $viewModel.inputText,
                                 placeholder: "Çevrilecek metni girin",
@@ -61,7 +86,7 @@ struct TranslationView: View {
                             }
                             .padding(.horizontal, 16)
                             .frame(height: 140)
-                            
+
                             // Çeviri butonu
                             HStack {
                                 Spacer()
@@ -95,15 +120,15 @@ struct TranslationView: View {
                                     .padding(.vertical, 8)
                                     .padding(.horizontal, 20)
                                     .background(
-                                        (viewModel.canTranslate() || (viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings)) ? 
+                                        (viewModel.canTranslate() || (viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings)) ?
                                             Color.blue : Color.gray.opacity(0.3)
                                     )
                                     .foregroundColor(.white)
                                     .cornerRadius(20)
                                     .font(.headline)
-                                    .shadow(color: 
-                                        (viewModel.canTranslate() || (viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings)) ? 
-                                            Color.blue.opacity(0.3) : Color.clear, 
+                                    .shadow(color:
+                                        (viewModel.canTranslate() || (viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings)) ?
+                                            Color.blue.opacity(0.3) : Color.clear,
                                         radius: 3, x: 0, y: 1
                                     )
                                 }
@@ -116,7 +141,7 @@ struct TranslationView: View {
                         .cornerRadius(16)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         .padding(.horizontal)
-                        
+
                         // Çıktı kartı
                         if !viewModel.translatedText.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
@@ -128,7 +153,7 @@ struct TranslationView: View {
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.top, 12)
-                                
+
                                 TranslateAreaTextEditor(
                                     text: $viewModel.translatedText,
                                     placeholder: "Çeviri burada görünecek",
@@ -137,14 +162,14 @@ struct TranslationView: View {
                                 )
                                 .padding(.horizontal, 16)
                                 .frame(height: 140)
-                                
+
                                 // İşlem butonları
                                 HStack(spacing: 20) {
                                     // Sesli dinleme butonu
                                     Button {
                                         let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                         impactGenerator.impactOccurred()
-                                        
+
                                         if case .speaking = viewModel.state {
                                             viewModel.stopAudio()
                                         } else {
@@ -160,7 +185,7 @@ struct TranslationView: View {
                                     }
                                     .disabled(isAudioButtonDisabled)
                                     .opacity(isAudioButtonDisabled ? 0.5 : 1)
-                                    
+
                                     // Kopyala butonu
                                     Button {
                                         UIPasteboard.general.string = viewModel.translatedText
@@ -176,17 +201,17 @@ struct TranslationView: View {
                                             .clipShape(Circle())
                                             .foregroundColor(.blue)
                                     }
-                                    
+
                                     // Paylaş butonu
                                     Button {
                                         let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                         impactGenerator.impactOccurred()
-                                        
+
                                         let activityVC = UIActivityViewController(
                                             activityItems: [viewModel.translatedText],
                                             applicationActivities: nil
                                         )
-                                        
+
                                         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                                            let rootViewController = windowScene.windows.first?.rootViewController {
                                             rootViewController.present(activityVC, animated: true)
@@ -199,14 +224,14 @@ struct TranslationView: View {
                                             .clipShape(Circle())
                                             .foregroundColor(.blue)
                                     }
-                                    
+
                                     Spacer()
-                                    
+
                                     // Önbellek bilgisi düğmesi
                                     Button {
                                         let impactGenerator = UIImpactFeedbackGenerator(style: .light)
                                         impactGenerator.impactOccurred()
-                                        
+
                                         withAnimation {
                                             viewModel.showCacheInfo.toggle()
                                         }
@@ -221,7 +246,7 @@ struct TranslationView: View {
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 12)
-                                
+
                                 // Önbellek bilgisi
                                 if viewModel.showCacheInfo {
                                     VStack(alignment: .leading, spacing: 4) {
@@ -229,9 +254,9 @@ struct TranslationView: View {
                                             Text("Ses Önbelleği:")
                                                 .font(.footnote)
                                                 .foregroundColor(.secondary)
-                                            
+
                                             Spacer()
-                                            
+
                                             Button {
                                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                                 impactGenerator.impactOccurred()
@@ -243,14 +268,14 @@ struct TranslationView: View {
                                             }
                                             .disabled(viewModel.audioCacheStats.count == 0)
                                         }
-                                        
+
                                         HStack {
                                             Text("\(viewModel.audioCacheStats.count) ses, \(viewModel.getCacheSize())")
                                                 .font(.footnote)
                                                 .foregroundColor(.secondary)
-                            
+
                             Spacer()
-                                            
+
                                             Text("24 saat sonra otomatik silinir")
                                                 .font(.caption)
                                                 .foregroundColor(.secondary)
@@ -266,7 +291,7 @@ struct TranslationView: View {
                             .padding(.horizontal)
                             .transition(.opacity.combined(with: .move(edge: .bottom)))
                         }
-                        
+
                         Spacer(minLength: 40)
                     }
                 }
@@ -281,7 +306,7 @@ struct TranslationView: View {
                         Image(systemName: "gear")
                     }
                 }
-                
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showHistoryView = true
@@ -323,12 +348,12 @@ struct TranslationView: View {
             }
         }
     }
-    
+
     // onFocusChange fonksiyonu
     private func onFocusChange(_ focused: Bool) {
         isInputFocused = focused
     }
-    
+
     // Ses oynatma butonu durumuna göre ikonu değiştir
     private var playButtonIcon: String {
         switch viewModel.state {
@@ -340,7 +365,7 @@ struct TranslationView: View {
             return "speaker.wave.2.fill"
         }
     }
-    
+
     // Ses oynatma butonu aktiflik durumu
     private var isAudioButtonDisabled: Bool {
         switch viewModel.state {
@@ -357,7 +382,7 @@ struct TranslationView: View {
 // Ana ekran ve geçmiş arasında köprü oluşturacak wrapper view
 struct TranslationHistoryViewWrapper: View {
     let viewModel: TranslationViewModel
-    
+
     var body: some View {
         // Burada geçmiş ekranına ana view model'i geçiyoruz
         TranslationHistoryView(historyService: viewModel.historyService)
@@ -366,4 +391,4 @@ struct TranslationHistoryViewWrapper: View {
 
 #Preview {
     TranslationView()
-} 
+}

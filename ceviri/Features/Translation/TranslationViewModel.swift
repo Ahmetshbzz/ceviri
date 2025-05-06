@@ -50,6 +50,9 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     @Published var audioCacheStats: (count: Int, totalSizeInBytes: Int) = (0, 0)
     @Published var showCacheInfo: Bool = false
 
+    // Model stili
+    @Published var isInformalStyle: Bool = false
+
     private var cancellables = Set<AnyCancellable>()
     private var audioData: Data?
 
@@ -75,6 +78,9 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
         historyService.delegate = self
         self.elevenLabsService.delegate = self
 
+        // Model stilini yükle
+        loadModelStyle()
+
         // Metin girişi yapıldığında dil tespiti için debounce ekle
         $inputText
             .debounce(for: 0.8, scheduler: RunLoop.main)
@@ -96,6 +102,30 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
         Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
             self?.updateCacheStats()
         }
+    }
+
+    // Model stilini yükle
+    private func loadModelStyle() {
+        let currentStyle = translationManager.getModelStyle()
+        isInformalStyle = currentStyle == .informal
+    }
+
+    // Model stilini değiştir
+    func toggleModelStyle() {
+        isInformalStyle.toggle()
+
+        // Stil değişikliğini kaydet
+        let newStyle: ModelStyle = isInformalStyle ? .informal : .formal
+        translationManager.setModelStyle(newStyle)
+
+        // Haptic feedback
+        let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+        impactGenerator.impactOccurred()
+    }
+
+    // Model stili metnini al
+    func getModelStyleText() -> String {
+        isInformalStyle ? "Günlük Dil" : "Standart Dil"
     }
 
     // Önbellek istatistiklerini güncelle

@@ -25,6 +25,10 @@ struct SettingsView: View {
     // Ses hızı ayarı için state
     @State private var playbackRate: Float = UserDefaults.standard.float(forKey: "playbackRate").isZero ? 0.85 : UserDefaults.standard.float(forKey: "playbackRate")
 
+    // Model stili seçimi için state
+    @State private var modelStyle: String = UserDefaults.standard.string(forKey: "modelStyle") ?? "formal"
+    @State private var overrideModelStyle: Bool = UserDefaults.standard.bool(forKey: "overrideModelStyle")
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -41,6 +45,47 @@ struct SettingsView: View {
                         }
                         .pickerStyle(.segmented)
                         .padding(.bottom, 8)
+
+                        // Model Stili Seçimi
+                        HStack {
+                            Text("Model tercihleri geçersiz kılınsın mı?")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+
+                            Spacer()
+
+                            Toggle("", isOn: $overrideModelStyle)
+                        }
+
+                        Text("Açık olduğunda, her zaman yukarıda seçtiğiniz servis kullanılır. Kapalı olduğunda, çeviri stili kullanılacak modeli otomatik belirler.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.bottom, 8)
+
+                        if !overrideModelStyle {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Çeviri Stili")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                Picker("Çeviri Stili", selection: $modelStyle) {
+                                    Text("Standart Dil").tag("formal")
+                                    Text("Günlük Dil").tag("informal")
+                                }
+                                .pickerStyle(.segmented)
+
+                                if modelStyle == "formal" {
+                                    Text("Standart dil: Resmi ortamlar ve profesyonel iletişim için uygundur. OpenAI kullanır.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    Text("Günlük dil: Arkadaşlar arası konuşma ve informal iletişim için uygundur. Gemini kullanır.")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding(.top, 8)
+                        }
                     }
 
                     Divider()
@@ -275,11 +320,20 @@ struct SettingsView: View {
         // Ses hızını kaydet
         UserDefaults.standard.setValue(playbackRate, forKey: "playbackRate")
 
+        // Model stili ayarlarını kaydet
+        UserDefaults.standard.set(modelStyle, forKey: "modelStyle")
+        UserDefaults.standard.set(overrideModelStyle, forKey: "overrideModelStyle")
+
+        // TranslationManager'ı güncelle
+        if let style = ModelStyle(rawValue: modelStyle) {
+            TranslationManager.shared.setModelStyle(style)
+        }
+
         // TranslationManager servislerini yenile
         TranslationManager.shared.refreshAPIKeys()
 
         // Bilgi mesajı göster
-        alertMessage = "Ayarlar kaydedildi."
+        alertMessage = "Ayarlar başarıyla kaydedildi."
         showAlert = true
 
         // Kullanıcıya bildirim göndermek için haptic geri bildirim

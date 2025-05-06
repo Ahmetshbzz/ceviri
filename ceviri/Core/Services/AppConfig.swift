@@ -2,8 +2,8 @@ import Foundation
 
 struct AppConfig {
     // Sabit API anahtarları (varsayılan değerler)
-    private static let defaultGeminiAPIKey = "AIzaSyBiO0aft4Cxtt0tKFFS_GdLDXIQ71tV8MI"
-    private static let defaultElevenLabsAPIKey = "sk_a7856b10a9a2455aebac7bfe210f139e9bba2c9e01186710"
+    private static let defaultGeminiAPIKey = "" // API anahtarlarını güvenlik için kaldırıldı
+    private static let defaultElevenLabsAPIKey = "" // API anahtarlarını güvenlik için kaldırıldı
     private static let defaultOpenAIAPIKey = ""
 
     // UserDefaults'tan değerleri al, eğer yoksa varsayılan değerleri kullan
@@ -19,24 +19,34 @@ struct AppConfig {
         UserDefaults.standard.string(forKey: "openAIAPIKey") ?? defaultOpenAIAPIKey
     }
 
-    // Kullanılacak çeviri servisi (gemini veya openai)
+    // Çeviri servisi tercihi
     static var translationService: String {
         UserDefaults.standard.string(forKey: "translationService") ?? "gemini"
     }
 
-    static var languages: [Language] = [
-        Language(code: "en", name: "İngilizce"),
+    // Dil listesi
+    static let languages: [Language] = [
+        Language(code: "auto", name: "Otomatik"),
         Language(code: "tr", name: "Türkçe"),
+        Language(code: "en", name: "İngilizce"),
         Language(code: "pl", name: "Lehçe"),
         Language(code: "fr", name: "Fransızca"),
-        Language(code: "de", name: "Almanca"),
+        Language(code: "es", name: "İspanyolca"),
         Language(code: "it", name: "İtalyanca"),
+        Language(code: "pt", name: "Portekizce"),
         Language(code: "ru", name: "Rusça"),
+        Language(code: "ar", name: "Arapça"),
         Language(code: "zh", name: "Çince"),
         Language(code: "ja", name: "Japonca"),
-        Language(code: "ar", name: "Arapça"),
-        Language(code: "pt", name: "Portekizce"),
         Language(code: "ko", name: "Korece"),
-        Language(code: "es", name: "İspanyolca")
+        Language(code: "nl", name: "Felemenkçe"),
+        Language(code: "de", name: "Almanca"),
+        Language(code: "sv", name: "İsveççe"),
+        Language(code: "da", name: "Danca"),
+        Language(code: "fi", name: "Fince"),
+        Language(code: "no", name: "Norveççe"),
+        Language(code: "el", name: "Yunanca"),
+        Language(code: "hu", name: "Macarca"),
+        Language(code: "cs", name: "Çekçe")
     ]
 }
