@@ -363,8 +363,8 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     }
 
     func swapLanguages() async {
-        // Otomatik dil algılama seçiliyse ya da çeviri boşsa işlem yapılmaz
-        guard selectedSourceLanguage.code != "auto" && !translatedText.isEmpty else { return }
+        // Çeviri boşsa işlem yapılmaz
+        guard !translatedText.isEmpty else { return }
 
         // Klavyeyi kapat
         await MainActor.run {
@@ -372,11 +372,18 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
         }
 
         let tempText = translatedText
-        let tempSourceLang = selectedSourceLanguage
+        let detectedSourceLang: Language
+
+        // Eğer otomatik ise, algılanan dili kaynak olarak kullan
+        if selectedSourceLanguage.code == "auto" && !detectedLanguage.isEmpty {
+            detectedSourceLang = availableLanguages.first(where: { $0.code == detectedLanguage }) ?? selectedSourceLanguage
+        } else {
+            detectedSourceLang = selectedSourceLanguage
+        }
 
         // Kaynağı hedefle, hedefi kaynakla değiştir
         selectedSourceLanguage = selectedTargetLanguage
-        selectedTargetLanguage = tempSourceLang
+        selectedTargetLanguage = detectedSourceLang
 
         translatedText = ""
         inputText = tempText
