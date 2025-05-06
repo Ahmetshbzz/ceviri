@@ -14,28 +14,28 @@ enum GeminiError: Error {
 class GeminiService {
     private let apiKey: String
     // Güncel Gemini 2.0 Flash API endpoint'i
-    private let baseURL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent"
+    private let baseURL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-001:generateContent"
     private let logger = Logger(subsystem: "com.app.ceviri", category: "GeminiService")
-    
+
     init(apiKey: String) {
         self.apiKey = apiKey
         logger.info("GeminiService başlatıldı. API Anahtarı boş mu: \(apiKey.isEmpty)")
     }
-    
+
     func translateText(text: String, sourceLanguage: String = "", targetLanguage: String) async throws -> String {
         logger.info("Çeviri isteği: \(text.prefix(30))..., Kaynak: \(sourceLanguage.isEmpty ? "Otomatik" : sourceLanguage) -> Hedef: \(targetLanguage)")
-        
+
         guard !apiKey.isEmpty else {
             logger.error("API anahtarı boş! AppConfig içinde API anahtarınızı ayarladığınızdan emin olun.")
             throw GeminiError.emptyAPIKey
         }
-        
+
         let urlString = "\(baseURL)?key=\(apiKey)"
         guard let url = URL(string: urlString) else {
             logger.error("Geçersiz URL oluşturuldu: \(urlString)")
             throw GeminiError.invalidURL
         }
-        
+
         // API isteği için prompt oluştur
         let prompt: String
         if sourceLanguage.isEmpty {
@@ -43,10 +43,10 @@ class GeminiService {
             Metin çeviri görevi:
             Aşağıdaki metni \(targetLanguage) diline çevir.
             Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme.
-            
+
             ÖNEMLİ: İnsan adlarını, yer adlarını, şirket isimleri ve diğer özel isimleri çevirme, olduğu gibi koru.
             Örneğin: John, New York, Google gibi özel isimleri çevirme.
-            
+
             Çevrilecek metin:
             \(text)
             """
@@ -55,19 +55,19 @@ class GeminiService {
             Metin çeviri görevi:
             Aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguage) diline çevir. Açıklama yapma farklı bir cevap verme.
             Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme kesinlikle !!!
-            
+
             ÖNEMLİ: İnsan adlarını, yer adlarını, şirket isimleri ve diğer özel isimleri çevirme, olduğu gibi koru.
             Örneğin: John, New York, Google gibi özel isimleri çevirme.
-            
+
             Kaynak dil: \(sourceLanguage)
             Hedef dil: \(targetLanguage)
-            
+
             Çevrilecek metin:
             \(text)
             """
         }
         logger.debug("Oluşturulan prompt: \(prompt)")
-        
+
         // API isteği için gerekli istek gövdesini oluştur - güncel Gemini 2.0 API formatı
         let requestBody: [String: Any] = [
             "contents": [
@@ -86,11 +86,11 @@ class GeminiService {
                 "topK": 40
             ]
         ]
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
             if let requestData = request.httpBody {
@@ -100,28 +100,28 @@ class GeminiService {
             logger.error("JSON serileştirme hatası: \(error.localizedDescription)")
             throw GeminiError.networkError(error)
         }
-        
+
         do {
             logger.info("API isteği gönderiliyor: \(url.absoluteString)")
             let (data, response) = try await URLSession.shared.data(for: request)
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 logger.error("HTTP yanıtı alınamadı")
                 throw GeminiError.invalidResponse
             }
-            
+
             logger.info("API yanıt durum kodu: \(httpResponse.statusCode)")
-            
+
             if httpResponse.statusCode != 200 {
                 let errorMessage = String(data: data, encoding: .utf8) ?? "Bilinmeyen API hatası"
                 logger.error("API hata yanıtı: \(errorMessage)")
                 throw GeminiError.apiError(errorMessage)
             }
-            
+
             if let responseString = String(data: data, encoding: .utf8) {
                 logger.debug("API yanıtı: \(responseString)")
             }
-            
+
             let responseText = try parseGeminiResponse(data: data)
             // Çeviriyi temizle - fazladan açıklamaları kaldır
             return cleanTranslationResult(responseText)
@@ -133,31 +133,31 @@ class GeminiService {
             throw GeminiError.networkError(error)
         }
     }
-    
+
     // Çeviri sonucunu temizle - açıklamaları, notları kaldır
     private func cleanTranslationResult(_ text: String) -> String {
         // Çeviri genellikle tırnak içinde veya ilk paragrafta bulunur
-        
+
         // Önce çift tırnak içindeki metni bul
         if let quotedText = text.range(of: "\"(.+?)\"", options: .regularExpression) {
             let extractedText = String(text[quotedText])
             // Tırnak işaretlerini kaldır
             return extractedText.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
         }
-        
+
         // Eğer tırnak işareti yoksa, ilk paragrafı al
         let paragraphs = text.components(separatedBy: "\n\n")
         if paragraphs.count > 1 {
             // İlk paragraf muhtemelen çeviridir, geri kalanı açıklamalar
             return paragraphs[0].trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        
+
         // Açıklama ayrımını bul (* veya ** ile başlayan satırlar)
         if let explanationRange = text.range(of: "\n[*]+") {
             // Açıklama başlangıcından önceki kısmı döndür
             return String(text[..<explanationRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        
+
         // "Açıklama:" veya "Not:" gibi kelimelerle başlayan kısımları kaldır
         let explanationMarkers = ["Açıklama:", "Not:", "**Açıklama:**", "**Not:**", "Explanation:", "Note:"]
         for marker in explanationMarkers {
@@ -165,11 +165,11 @@ class GeminiService {
                 return String(text[..<markerRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
-        
+
         // Temizleme yapılamazsa, en azından başlangıç ve sondaki boşlukları kaldır
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
+
     private func parseGeminiResponse(data: Data) throws -> String {
         do {
             logger.debug("Yanıt ayrıştırılıyor...")
@@ -177,37 +177,37 @@ class GeminiService {
                 logger.error("JSON ayrıştırma hatası - geçersiz format")
                 throw GeminiError.apiError("API yanıtı JSON formatında değil")
             }
-            
+
             guard let candidates = json["candidates"] as? [[String: Any]] else {
                 logger.error("JSON ayrıştırma hatası - 'candidates' bulunamadı")
                 throw GeminiError.apiError("API yanıtında 'candidates' alanı bulunamadı")
             }
-            
+
             guard let firstCandidate = candidates.first else {
                 logger.error("JSON ayrıştırma hatası - ilk aday bulunamadı")
                 throw GeminiError.apiError("API yanıtında aday yanıt bulunamadı")
             }
-            
+
             guard let content = firstCandidate["content"] as? [String: Any] else {
                 logger.error("JSON ayrıştırma hatası - 'content' bulunamadı")
                 throw GeminiError.apiError("API yanıtında 'content' alanı bulunamadı")
             }
-            
+
             guard let parts = content["parts"] as? [[String: Any]] else {
                 logger.error("JSON ayrıştırma hatası - 'parts' bulunamadı")
                 throw GeminiError.apiError("API yanıtında 'parts' alanı bulunamadı")
             }
-            
+
             guard let firstPart = parts.first else {
                 logger.error("JSON ayrıştırma hatası - ilk part bulunamadı")
                 throw GeminiError.apiError("API yanıtında part bulunamadı")
             }
-            
+
             guard let text = firstPart["text"] as? String else {
                 logger.error("JSON ayrıştırma hatası - 'text' bulunamadı")
                 throw GeminiError.apiError("API yanıtında metin bulunamadı")
             }
-            
+
             logger.info("Çeviri başarıyla ayrıştırıldı")
             return text
         } catch let error as GeminiError {
@@ -217,25 +217,25 @@ class GeminiService {
             throw GeminiError.decodingError(error)
         }
     }
-    
+
     func detectLanguage(text: String) async throws -> String {
         logger.info("Dil algılama isteği: \(text.prefix(30))...")
-        
+
         guard !apiKey.isEmpty else {
             logger.error("API anahtarı boş! AppConfig içinde API anahtarınızı ayarladığınızdan emin olun.")
             throw GeminiError.emptyAPIKey
         }
-        
+
         let urlString = "\(baseURL)?key=\(apiKey)"
         guard let url = URL(string: urlString) else {
             logger.error("Geçersiz URL oluşturuldu: \(urlString)")
             throw GeminiError.invalidURL
         }
-        
+
         // Dil tespiti için prompt oluştur
         let prompt = "Bu metnin dilini tespit et ve sadece ISO 639-1 dil kodunu (örneğin: 'en', 'tr', 'fr' gibi) döndür:\n\n\(text)"
         logger.debug("Oluşturulan prompt: \(prompt)")
-        
+
         // API isteği için gerekli istek gövdesini oluştur
         let requestBody: [String: Any] = [
             "contents": [
@@ -254,11 +254,11 @@ class GeminiService {
                 "topK": 10
             ]
         ]
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
             if let requestData = request.httpBody {
@@ -268,28 +268,28 @@ class GeminiService {
             logger.error("JSON serileştirme hatası: \(error.localizedDescription)")
             throw GeminiError.networkError(error)
         }
-        
+
         do {
             logger.info("API isteği gönderiliyor: \(url.absoluteString)")
             let (data, response) = try await URLSession.shared.data(for: request)
-            
+
             guard let httpResponse = response as? HTTPURLResponse else {
                 logger.error("HTTP yanıtı alınamadı")
                 throw GeminiError.invalidResponse
             }
-            
+
             logger.info("API yanıt durum kodu: \(httpResponse.statusCode)")
-            
+
             if httpResponse.statusCode != 200 {
                 let errorMessage = String(data: data, encoding: .utf8) ?? "Bilinmeyen API hatası"
                 logger.error("API hata yanıtı: \(errorMessage)")
                 throw GeminiError.apiError(errorMessage)
             }
-            
+
             if let responseString = String(data: data, encoding: .utf8) {
                 logger.debug("API yanıtı: \(responseString)")
             }
-            
+
             let languageCode = try parseGeminiResponse(data: data)
             // Sadece dil kodunu al (yanıtta ek açıklamalar da olabilir)
             let cleanCode = languageCode.trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: .whitespacesAndNewlines).first ?? languageCode
@@ -303,4 +303,4 @@ class GeminiService {
             throw GeminiError.networkError(error)
         }
     }
-} 
+}
