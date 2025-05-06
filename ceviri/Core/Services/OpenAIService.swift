@@ -35,33 +35,44 @@ class OpenAIService {
             throw OpenAIError.invalidURL
         }
 
+        // Eğer "lehçe" seçildiyse, bunu Polonya dili olarak belirle
+        var targetLanguageForPrompt = targetLanguage
+        if targetLanguage.lowercased() == "lehçe" {
+            targetLanguageForPrompt = "Polonya dili (Polish)"
+        }
+
         // API isteği için prompt oluştur
         let prompt: String
         if sourceLanguage.isEmpty {
             prompt = """
-            Metin çeviri görevi:
-            Aşağıdaki metni \(targetLanguage) diline çevir.
-            Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme.
+            Lütfen aşağıdaki metni \(targetLanguageForPrompt) diline çevir.
 
-            ÖNEMLİ: İnsan adlarını, yer adlarını, şirket isimleri ve diğer özel isimleri çevirme, olduğu gibi koru.
-            Örneğin: John, New York, Google gibi özel isimleri çevirme.
+            ÖNEMLİ KURALLAR:
+            1. Çevirini doğal ve akıcı olmalı, makine çevirisi gibi hissettirmemeli.
+            2. Günlük konuşma dilinde cevap ver, resmi bir dil değil.
+            3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
+            4. Metindeki tüm anlamları ve nüansları koru.
+            5. Cümleyi düzgün bir şekilde yeniden yapılandır, kelime kelime çevirme.
+            6. Google Translate'in yapacağı gibi mekanik bir çeviri yapma.
+            7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
 
-            Çevrilecek metin:
+            Metni çevir:
             \(text)
             """
         } else {
             prompt = """
-            Metin çeviri görevi:
-            Aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguage) diline çevir. Açıklama yapma farklı bir cevap verme.
-            Sadece çeviriyi döndür, açıklama veya ek bilgi ekleme kesinlikle !!!
+            Lütfen aşağıdaki \(sourceLanguage) dilindeki metni \(targetLanguageForPrompt) diline çevir.
 
-            ÖNEMLİ: İnsan adlarını, yer adlarını, şirket isimleri ve diğer özel isimleri çevirme, olduğu gibi koru.
-            Örneğin: John, New York, Google gibi özel isimleri çevirme.
+            ÖNEMLİ KURALLAR:
+            1. Çevirini doğal ve akıcı olmalı, makine çevirisi gibi hissettirmemeli.
+            2. Günlük konuşma dilinde cevap ver, resmi bir dil değil.
+            3. İnsan adlarını, yer isimlerini, marka isimlerini olduğu gibi bırak.
+            4. Metindeki tüm anlamları ve nüansları koru.
+            5. Cümleyi düzgün bir şekilde yeniden yapılandır, kelime kelime çevirme.
+            6. Google Translate'in yapacağı gibi mekanik bir çeviri yapma.
+            7. Sadece çeviriyi döndür, başka açıklama veya ek bilgi ekleme.
 
-            Kaynak dil: \(sourceLanguage)
-            Hedef dil: \(targetLanguage)
-
-            Çevrilecek metin:
+            Metni çevir:
             \(text)
             """
         }
@@ -69,19 +80,19 @@ class OpenAIService {
 
         // API isteği için gerekli istek gövdesini oluştur - OpenAI API formatı
         let requestBody: [String: Any] = [
-            "model": "gpt-4o",
+            "model": "o1",  // En doğru çeviri modeli (Mayıs 2025 itibariyle) - güncellendi
             "messages": [
                 [
                     "role": "system",
-                    "content": "Sen profesyonel bir çevirmensin. Metinleri doğru ve akıcı bir şekilde çevirirsin."
+                    "content": "Sen profesyonel bir çevirmensin ama resmi değilsin. Metinleri doğru, akıcı ve doğal bir konuşma dilinde çevirirsin. Çevirilerin makine çevirisi gibi hissettirmemeli, bir insanın konuşması gibi olmalı. Metinlerin anlamını, nüanslarını ve tonunu korursun. Kelimesi kelimesine çeviri yapmak yerine, hedef dilde doğal karşılıklarını bulursun."
                 ],
                 [
                     "role": "user",
                     "content": prompt
                 ]
             ],
-            "temperature": 0.1,
-            "top_p": 0.8
+            "temperature": 0.3,
+            "top_p": 0.9
         ]
 
         var request = URLRequest(url: url)
@@ -221,7 +232,7 @@ class OpenAIService {
 
         // API isteği için gerekli istek gövdesini oluştur - OpenAI API formatı
         let requestBody: [String: Any] = [
-            "model": "gpt-4o",
+            "model": "o1",  // En doğru çeviri modeli (Mayıs 2025 itibariyle) - güncellendi
             "messages": [
                 [
                     "role": "system",
