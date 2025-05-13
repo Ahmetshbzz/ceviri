@@ -18,6 +18,12 @@ struct TranslationView: View {
             ZStack {
                 // Arka plan rengi
                 backgroundColor.ignoresSafeArea()
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if isInputFocused {
+                            isInputFocused = false
+                        }
+                    }
 
                 // Ana içerik
                 ScrollView {
@@ -31,12 +37,21 @@ struct TranslationView: View {
                             isInputFocused = focused
                         }
                     )
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if isInputFocused {
+                            isInputFocused = false
+                        }
+                    }
 
                     // Çeviri Stili Seçimi
                     HStack {
                         Spacer()
 
                         Button {
+                            if isInputFocused {
+                                isInputFocused = false
+                            }
                             viewModel.toggleModelStyle()
                         } label: {
                             HStack(spacing: 6) {
@@ -56,6 +71,12 @@ struct TranslationView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 4)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if isInputFocused {
+                            isInputFocused = false
+                        }
+                    }
 
                         // Giriş kartı
                         VStack(alignment: .leading, spacing: 8) {
@@ -67,6 +88,12 @@ struct TranslationView: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if isInputFocused {
+                                    isInputFocused = false
+                                }
+                            }
 
                             TranslateAreaTextEditor(
                                 text: $viewModel.inputText,
@@ -81,7 +108,8 @@ struct TranslationView: View {
                                     }
                                 }
                             )
-                            .onChange(of: viewModel.inputText) { _, _ in
+                            .focused($isInputFocused)
+                            .onChange(of: viewModel.inputText) { oldValue, newValue in
                                 onFocusChange(true)
                             }
                             .padding(.horizontal, 16)
@@ -91,6 +119,7 @@ struct TranslationView: View {
                             HStack {
                                 Spacer()
                                 Button {
+                                    isInputFocused = false
                                     if viewModel.inputText.isEmpty && UIPasteboard.general.hasStrings {
                                         // Yapıştır işlemi
                                         if let pasteString = UIPasteboard.general.string {
@@ -136,6 +165,12 @@ struct TranslationView: View {
                                 .padding(.bottom, 12)
                                 .padding(.trailing, 16)
                             }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                if isInputFocused {
+                                    isInputFocused = false
+                                }
+                            }
                         }
                         .background(colorScheme == .dark ? Color(UIColor.systemGray6) : Color.white)
                         .cornerRadius(16)
@@ -153,6 +188,12 @@ struct TranslationView: View {
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.top, 12)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    if isInputFocused {
+                                        isInputFocused = false
+                                    }
+                                }
 
                                 TranslateAreaTextEditor(
                                     text: $viewModel.translatedText,
@@ -162,11 +203,20 @@ struct TranslationView: View {
                                 )
                                 .padding(.horizontal, 16)
                                 .frame(height: 140)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    if isInputFocused {
+                                        isInputFocused = false
+                                    }
+                                }
 
                                 // İşlem butonları
                                 HStack(spacing: 20) {
                                     // Sesli dinleme butonu
                                     Button {
+                                        if isInputFocused {
+                                            isInputFocused = false
+                                        }
                                         let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                         impactGenerator.impactOccurred()
 
@@ -188,6 +238,9 @@ struct TranslationView: View {
 
                                     // Kopyala butonu
                                     Button {
+                                        if isInputFocused {
+                                            isInputFocused = false
+                                        }
                                         UIPasteboard.general.string = viewModel.translatedText
                                         let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                         impactGenerator.impactOccurred()
@@ -204,6 +257,9 @@ struct TranslationView: View {
 
                                     // Paylaş butonu
                                     Button {
+                                        if isInputFocused {
+                                            isInputFocused = false
+                                        }
                                         let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                         impactGenerator.impactOccurred()
 
@@ -229,6 +285,9 @@ struct TranslationView: View {
 
                                     // Önbellek bilgisi düğmesi
                                     Button {
+                                        if isInputFocused {
+                                            isInputFocused = false
+                                        }
                                         let impactGenerator = UIImpactFeedbackGenerator(style: .light)
                                         impactGenerator.impactOccurred()
 
@@ -246,6 +305,12 @@ struct TranslationView: View {
                                 }
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 12)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    if isInputFocused {
+                                        isInputFocused = false
+                                    }
+                                }
 
                                 // Önbellek bilgisi
                                 if viewModel.showCacheInfo {
@@ -258,6 +323,9 @@ struct TranslationView: View {
                                             Spacer()
 
                                             Button {
+                                                if isInputFocused {
+                                                    isInputFocused = false
+                                                }
                                                 let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
                                                 impactGenerator.impactOccurred()
                                                 viewModel.clearAudioCache()
@@ -283,6 +351,12 @@ struct TranslationView: View {
                                     }
                                     .padding(.horizontal, 16)
                                     .padding(.bottom, 12)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        if isInputFocused {
+                                            isInputFocused = false
+                                        }
+                                    }
                                 }
                             }
                             .background(colorScheme == .dark ? Color(UIColor.systemGray6) : Color.white)
@@ -295,12 +369,21 @@ struct TranslationView: View {
                         Spacer(minLength: 40)
                     }
                 }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if isInputFocused {
+                        isInputFocused = false
+                    }
+                }
             }
             .navigationTitle("Çeviri")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
+                        if isInputFocused {
+                            isInputFocused = false
+                        }
                         showSettingsView = true
                     } label: {
                         Image(systemName: "gear")
@@ -309,9 +392,21 @@ struct TranslationView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        if isInputFocused {
+                            isInputFocused = false
+                        }
                         showHistoryView = true
                     } label: {
                         Image(systemName: "clock.arrow.circlepath")
+                    }
+                }
+
+                ToolbarItem(placement: .keyboard) {
+                    HStack {
+                        Spacer()
+                        Button("Tamam") {
+                            isInputFocused = false
+                        }
                     }
                 }
             }

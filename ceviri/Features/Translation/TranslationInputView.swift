@@ -3,6 +3,7 @@ import SwiftUI
 struct TranslationInputView: View {
     @ObservedObject var viewModel: TranslationViewModel
     var onFocusChange: (Bool) -> Void
+    @FocusState private var isInputFocused: Bool
 
     var body: some View {
         VStack(spacing: 16) {
@@ -20,7 +21,8 @@ struct TranslationInputView: View {
                     }
                 }
             )
-            .onChange(of: viewModel.inputText) { _, _ in
+            .focused($isInputFocused)
+            .onChange(of: viewModel.inputText) { oldValue, newValue in
                 onFocusChange(true)
             }
             .padding(.horizontal)
@@ -30,6 +32,13 @@ struct TranslationInputView: View {
             Divider()
                 .padding(.horizontal, 30)
                 .padding(.vertical, 8)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if isInputFocused {
+                        isInputFocused = false
+                        onFocusChange(false)
+                    }
+                }
 
             // Orta bölüm - Algılanan dil ve çeviri butonu
             HStack {
@@ -46,6 +55,7 @@ struct TranslationInputView: View {
                 Spacer()
 
                 Button {
+                    isInputFocused = false
                     onFocusChange(false)
                     Task {
                         await viewModel.translate()
@@ -65,6 +75,20 @@ struct TranslationInputView: View {
                 .disabled(!viewModel.canTranslate())
             }
             .padding(.horizontal)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if isInputFocused {
+                    isInputFocused = false
+                    onFocusChange(false)
+                }
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if isInputFocused {
+                isInputFocused = false
+                onFocusChange(false)
+            }
         }
     }
 }
