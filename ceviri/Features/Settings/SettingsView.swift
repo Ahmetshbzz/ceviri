@@ -25,8 +25,8 @@ struct SettingsView: View {
     // Ses hızı ayarı için state
     @State private var playbackRate: Float = {
         let savedRate = UserDefaults.standard.float(forKey: "playbackRate")
-        // Değer 0'sa (ayarlanmamışsa) veya geçerli aralıkta değilse (0.7...1.2) varsayılan değeri kullan
-        if savedRate.isZero || savedRate < 0.7 || savedRate > 1.2 {
+        // Değer 0'sa (ayarlanmamışsa) veya geçerli aralıkta değilse (0.75...1.15) varsayılan değeri kullan
+        if savedRate.isZero || savedRate < 0.75 || savedRate > 1.15 {
             return 0.85
         }
         // 0.05'in en yakın katına yuvarlama
@@ -226,13 +226,13 @@ struct SettingsView: View {
                             }
 
                             HStack(spacing: 12) {
-                                Text("0.7x")
+                                Text("0.75x")
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
 
-                                Slider(value: $playbackRate, in: 0.7...1.2, step: 0.05)
+                                Slider(value: $playbackRate, in: 0.75...1.15, step: 0.05)
 
-                                Text("1.2x")
+                                Text("1.15x")
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                             }
