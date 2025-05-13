@@ -8,18 +8,30 @@ struct LanguageSelectionView: View {
     var title: String = "Dil Seçin"
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
-    
+
     var filteredLanguages: [Language] {
-        if searchText.isEmpty {
-            return languages
-        } else {
-            return languages.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+        // Otomatik seçeneğini filtrelemek için kontrolü ekliyoruz
+        let filteredList = languages.filter { language in
+            // Eğer includeAutoDetect true ise ve zaten bir "auto" kodlu dil listemizde varsa
+            // onu listeleme içinde gösterme (interface'te elle ekleyeceğiz)
+            if includeAutoDetect && language.code == "auto" {
+                return false
+            }
+
+            if searchText.isEmpty {
+                return true
+            } else {
+                return language.name.localizedCaseInsensitiveContains(searchText)
+            }
         }
+
+        return filteredList
     }
-    
+
     var body: some View {
         NavigationStack {
             List {
+                // Eğer otomatik algılama istendiyse, elle ekle
                 if includeAutoDetect {
                     Button {
                         selectedLanguage = Language(code: "auto", name: "Otomatik")
@@ -28,9 +40,9 @@ struct LanguageSelectionView: View {
                         HStack {
                             Text("Otomatik")
                                 .foregroundColor(.primary)
-                            
+
                             Spacer()
-                            
+
                             if selectedLanguage.code == "auto" {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.blue)
@@ -38,7 +50,7 @@ struct LanguageSelectionView: View {
                         }
                     }
                 }
-                
+
                 ForEach(filteredLanguages) { language in
                     Button {
                         selectedLanguage = language
@@ -47,9 +59,9 @@ struct LanguageSelectionView: View {
                         HStack {
                             Text(language.name)
                                 .foregroundColor(.primary)
-                            
+
                             Spacer()
-                            
+
                             if language.code == selectedLanguage.code {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.blue)
@@ -76,4 +88,4 @@ struct LanguageSelectionView: View {
         selectedLanguage: .constant(Language(code: "tr", name: "Türkçe")),
         languages: AppConfig.languages
     )
-} 
+}

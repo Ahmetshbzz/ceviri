@@ -55,10 +55,8 @@ struct TranslationHeaderView: View {
                         // Klavyeyi kapat
                         onFocusChange(false)
 
-                        if !(viewModel.translatedText.isEmpty) {
-                            let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-                            impactGenerator.impactOccurred()
-                        }
+                        let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+                        impactGenerator.impactOccurred()
 
                         Task {
                             await viewModel.swapLanguages()
@@ -72,8 +70,9 @@ struct TranslationHeaderView: View {
                             .clipShape(Circle())
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     }
-                    .disabled(viewModel.translatedText.isEmpty || (viewModel.selectedSourceLanguage.code == "auto" && viewModel.detectedLanguage.isEmpty))
-                    .opacity(viewModel.translatedText.isEmpty || (viewModel.selectedSourceLanguage.code == "auto" && viewModel.detectedLanguage.isEmpty) ? 0.5 : 1)
+                    // Sadece "auto" seçili ve bir dil algılanmamışsa buton pasif olacak
+                    .disabled(viewModel.selectedSourceLanguage.code == "auto" && viewModel.detectedLanguage.isEmpty)
+                    .opacity(viewModel.selectedSourceLanguage.code == "auto" && viewModel.detectedLanguage.isEmpty ? 0.5 : 1)
 
                     Spacer()
 

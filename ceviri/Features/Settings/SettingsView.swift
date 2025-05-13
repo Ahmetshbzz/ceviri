@@ -23,7 +23,16 @@ struct SettingsView: View {
     private let rachelVoice = Voice(voice_id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel (Doğal Kadın Sesi)", category: "premade")
 
     // Ses hızı ayarı için state
-    @State private var playbackRate: Float = UserDefaults.standard.float(forKey: "playbackRate").isZero ? 0.85 : UserDefaults.standard.float(forKey: "playbackRate")
+    @State private var playbackRate: Float = {
+        let savedRate = UserDefaults.standard.float(forKey: "playbackRate")
+        // Değer 0'sa (ayarlanmamışsa) veya geçerli aralıkta değilse (0.7...1.2) varsayılan değeri kullan
+        if savedRate.isZero || savedRate < 0.7 || savedRate > 1.2 {
+            return 0.85
+        }
+        // 0.05'in en yakın katına yuvarlama
+        let multiplier: Float = 20.0 // 1/0.05 = 20
+        return round(savedRate * multiplier) / multiplier
+    }()
 
     // Model stili seçimi için state
     @State private var modelStyle: String = UserDefaults.standard.string(forKey: "modelStyle") ?? "formal"
@@ -217,13 +226,13 @@ struct SettingsView: View {
                             }
 
                             HStack(spacing: 12) {
-                                Text("0.5x")
+                                Text("0.7x")
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
 
-                                Slider(value: $playbackRate, in: 0.5...1.5, step: 0.05)
+                                Slider(value: $playbackRate, in: 0.7...1.2, step: 0.05)
 
-                                Text("1.5x")
+                                Text("1.2x")
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                             }

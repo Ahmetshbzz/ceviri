@@ -173,7 +173,7 @@ struct TranslationView: View {
                                         if case .speaking = viewModel.state {
                                             viewModel.stopAudio()
                                         } else {
-                                            viewModel.convertTextToSpeech()
+                                            viewModel.generateSpeech()
                                         }
                                     } label: {
                                         Image(systemName: playButtonIcon)

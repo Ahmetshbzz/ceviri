@@ -209,14 +209,15 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     }
 
     // ElevenLabs ile çevrilmiş metni sese dönüştür
-    func convertTextToSpeech() {
-        guard !translatedText.isEmpty else { return }
+    func generateSpeech() {
+        // Çevrilmiş metin yok ise işlem yapma
+        guard !translatedText.isEmpty else {
+            debugMessage = "‼️ Seslendirilecek çeviri bulunamadı"
+            return
+        }
 
-        // Klavyeyi kapat
-        dismissKeyboard()
-
-        // Eğer zaten konuşuyorsa, durdur
-        if case .speaking = state {
+        // Ses çalınıyorsa durdur
+        if state == .speaking {
             stopAudio()
             return
         }
@@ -225,6 +226,9 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
             self.state = .converting
             self.debugMessage = "Ses oluşturuluyor..."
         }
+
+        // ElevenLabs API ayarlarını görüntüle (hata ayıklama için)
+        elevenLabsService.logAPISettings()
 
         elevenLabsService.convertTextToSpeech(text: translatedText, voiceID: selectedVoice?.voice_id) { [weak self] result in
             guard let self = self else { return }
@@ -394,15 +398,12 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
     }
 
     func swapLanguages() async {
-        // Çeviri boşsa işlem yapılmaz
-        guard !translatedText.isEmpty else { return }
-
         // Klavyeyi kapat
         await MainActor.run {
             dismissKeyboard()
         }
 
-        let tempText = translatedText
+        // Diller arasında geçiş için değişkenleri hazırla
         let detectedSourceLang: Language
 
         // Eğer otomatik ise, algılanan dili kaynak olarak kullan
@@ -412,16 +413,32 @@ class TranslationViewModel: ObservableObject, ElevenLabsPlayerDelegate, Translat
             detectedSourceLang = selectedSourceLanguage
         }
 
-        // Kaynağı hedefle, hedefi kaynakla değiştir
-        selectedSourceLanguage = selectedTargetLanguage
-        selectedTargetLanguage = detectedSourceLang
+        // Çevrilmiş metin varsa, çeviriyi ters yöne yap
+        if !translatedText.isEmpty {
+            let tempText = translatedText
 
-        translatedText = ""
-        inputText = tempText
-        detectedLanguage = "" // Algılanan dili sıfırla
+            // Kaynağı hedefle, hedefi kaynakla değiştir
+            selectedSourceLanguage = selectedTargetLanguage
+            selectedTargetLanguage = detectedSourceLang
 
-        // Yeni çeviriyi başlat
-        await translate()
+            translatedText = ""
+            inputText = tempText
+            detectedLanguage = "" // Algılanan dili sıfırla
+
+            // Yeni çeviriyi başlat
+            await translate()
+        } else {
+            // Çevrilmiş metin yoksa, sadece dilleri değiştir
+            let tempLang = selectedSourceLanguage
+            selectedSourceLanguage = selectedTargetLanguage
+            selectedTargetLanguage = tempLang
+            detectedLanguage = "" // Algılanan dili sıfırla
+
+            // Eğer giriş metni varsa yeni çeviriyi başlat
+            if !inputText.isEmpty {
+                await translate()
+            }
+        }
     }
 
     // Geçmiş öğesi seçildiğinde çağrılır

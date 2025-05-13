@@ -2,13 +2,13 @@ import SwiftUI
 
 struct TranslationOutputView: View {
     @ObservedObject var viewModel: TranslationViewModel
-    
+
     var body: some View {
         VStack {
             Divider()
                 .padding(.horizontal, 30)
                 .padding(.vertical, 8)
-            
+
             // Çeviri sonucu alanı
             TranslateAreaTextEditor(
                 text: $viewModel.translatedText,
@@ -18,7 +18,7 @@ struct TranslationOutputView: View {
             )
             .padding(.horizontal)
             .frame(height: 140)
-            
+
             // Önbellek bilgisi
             if viewModel.showCacheInfo {
                 VStack(alignment: .leading, spacing: 4) {
@@ -26,9 +26,9 @@ struct TranslationOutputView: View {
                         Text("Ses Önbelleği:")
                             .font(.footnote)
                             .foregroundColor(.secondary)
-                        
+
                         Spacer()
-                        
+
                         Button {
                             viewModel.clearAudioCache()
                         } label: {
@@ -38,14 +38,14 @@ struct TranslationOutputView: View {
                         }
                         .disabled(viewModel.audioCacheStats.count == 0)
                     }
-                    
+
                     HStack {
                         Text("\(viewModel.audioCacheStats.count) ses, \(viewModel.getCacheSize())")
                             .font(.footnote)
                             .foregroundColor(.secondary)
-                        
+
                         Spacer()
-                        
+
                         Text("24 saat sonra otomatik silinir")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -55,7 +55,7 @@ struct TranslationOutputView: View {
                 .padding(.top, 4)
                 .padding(.bottom, 8)
             }
-            
+
             // İşlem butonları
             if !viewModel.translatedText.isEmpty {
                 HStack(spacing: 16) {
@@ -71,15 +71,15 @@ struct TranslationOutputView: View {
                             .clipShape(Circle())
                             .foregroundColor(viewModel.showCacheInfo ? .blue : .gray)
                     }
-                    
+
                     Spacer()
-                    
+
                     // Sesli dinleme butonu
                     Button {
                         if case .speaking = viewModel.state {
                             viewModel.stopAudio()
                         } else {
-                            viewModel.convertTextToSpeech()
+                            viewModel.generateSpeech()
                         }
                     } label: {
                         Image(systemName: playButtonIcon)
@@ -90,7 +90,7 @@ struct TranslationOutputView: View {
                     }
                     .disabled(isAudioButtonDisabled)
                     .opacity(isAudioButtonDisabled ? 0.5 : 1)
-                    
+
                     // Kopyala butonu
                     Button {
                         UIPasteboard.general.string = viewModel.translatedText
@@ -103,14 +103,14 @@ struct TranslationOutputView: View {
                             .clipShape(Circle())
                             .foregroundColor(.blue)
                     }
-                    
+
                     // Paylaş butonu
                     Button {
                         let activityVC = UIActivityViewController(
                             activityItems: [viewModel.translatedText],
                             applicationActivities: nil
                         )
-                        
+
                         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                            let rootViewController = windowScene.windows.first?.rootViewController {
                             rootViewController.present(activityVC, animated: true)
@@ -128,7 +128,7 @@ struct TranslationOutputView: View {
             }
         }
     }
-    
+
     // Ses oynatma butonu durumuna göre ikonu değiştir
     private var playButtonIcon: String {
         switch viewModel.state {
@@ -140,7 +140,7 @@ struct TranslationOutputView: View {
             return "speaker.wave.2.fill"
         }
     }
-    
+
     // Ses oynatma butonu aktiflik durumu
     private var isAudioButtonDisabled: Bool {
         switch viewModel.state {
@@ -152,4 +152,4 @@ struct TranslationOutputView: View {
             return viewModel.translatedText.isEmpty
         }
     }
-} 
+}
