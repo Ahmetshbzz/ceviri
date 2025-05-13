@@ -3,7 +3,7 @@ import SwiftUI
 struct TranslationInputView: View {
     @ObservedObject var viewModel: TranslationViewModel
     var onFocusChange: (Bool) -> Void
-    
+
     var body: some View {
         VStack(spacing: 16) {
             // Kaynak metin alanı
@@ -26,11 +26,11 @@ struct TranslationInputView: View {
             .padding(.horizontal)
             .padding(.top, 16)
             .frame(height: 140)
-            
+
             Divider()
                 .padding(.horizontal, 30)
                 .padding(.vertical, 8)
-            
+
             // Orta bölüm - Algılanan dil ve çeviri butonu
             HStack {
                 if !viewModel.detectedLanguage.isEmpty && !viewModel.inputText.isEmpty && viewModel.selectedSourceLanguage.code == "auto" {
@@ -42,9 +42,9 @@ struct TranslationInputView: View {
                         .background(Color.secondary.opacity(0.1))
                         .cornerRadius(8)
                 }
-                
+
                 Spacer()
-                
+
                 Button {
                     onFocusChange(false)
                     Task {
@@ -67,4 +67,4 @@ struct TranslationInputView: View {
             .padding(.horizontal)
         }
     }
-} 
+}

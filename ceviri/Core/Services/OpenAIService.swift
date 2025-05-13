@@ -83,7 +83,7 @@ class OpenAIService {
         logger.debug("Oluşturulan prompt: \(prompt)")
 
         // API isteği için gerekli istek gövdesini oluştur - OpenAI API formatı
-        var requestBody: [String: Any] = [
+        let requestBody: [String: Any] = [
             "model": "gpt-4.1",  // En yüksek çeviri kalitesi sunan model (Mayıs 2025)
             "messages": [
                 [
@@ -235,7 +235,7 @@ class OpenAIService {
         logger.debug("Oluşturulan prompt: \(prompt)")
 
         // API isteği için gerekli istek gövdesini oluştur - OpenAI API formatı
-        var requestBody: [String: Any] = [
+        let requestBody: [String: Any] = [
             "model": "gpt-4.1",  // En yüksek çeviri kalitesi sunan model (Mayıs 2025)
             "messages": [
                 [

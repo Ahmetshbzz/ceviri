@@ -10,6 +10,12 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
 
+    // Aktif sekme seçimi için state
+    @State private var selectedTab = 0
+
+    // Klavye durumu için FocusState
+    @FocusState private var isTextFieldFocused: Bool
+
     // ElevenLabs servisi
     private let elevenLabsService = ElevenLabsService()
 
@@ -38,247 +44,100 @@ struct SettingsView: View {
     @State private var modelStyle: String = UserDefaults.standard.string(forKey: "modelStyle") ?? "formal"
     @State private var overrideModelStyle: Bool = UserDefaults.standard.bool(forKey: "overrideModelStyle")
 
+    // Sekme başlıkları
+    private let tabs = ["Genel", "Ses", "API Anahtarları"]
+
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 32) {
-                    // ÇEVİRİ SERVİSİ SEÇİMİ
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Çeviri Servisi")
-                            .font(.title3)
-                            .fontWeight(.medium)
+            VStack(spacing: 0) {
+                // Sekme çubuğu
+                TabSelectionView(tabs: tabs, selectedTab: $selectedTab)
+                    .padding(.top, 8)
 
-                        Picker("Çeviri Servisi", selection: $translationService) {
-                            Text("Gemini AI").tag("gemini")
-                            Text("OpenAI").tag("openai")
-                        }
-                        .pickerStyle(.segmented)
-                        .padding(.bottom, 8)
+                Divider()
 
-                        // Model Stili Seçimi
-                        HStack {
-                            Text("Model tercihleri geçersiz kılınsın mı?")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-
-                            Spacer()
-
-                            Toggle("", isOn: $overrideModelStyle)
-                        }
-
-                        Text("Açık olduğunda, her zaman yukarıda seçtiğiniz servis kullanılır. Kapalı olduğunda, çeviri stili kullanılacak modeli otomatik belirler.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.bottom, 8)
-
-                        if !overrideModelStyle {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Çeviri Stili")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-
-                                Picker("Çeviri Stili", selection: $modelStyle) {
-                                    Text("Standart Dil").tag("formal")
-                                    Text("Günlük Dil").tag("informal")
-                                }
-                                .pickerStyle(.segmented)
-
-                                if modelStyle == "formal" {
-                                    Text("Standart dil: Resmi ortamlar ve profesyonel iletişim için uygundur. OpenAI kullanır.")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                } else {
-                                    Text("Günlük dil: Arkadaşlar arası konuşma ve informal iletişim için uygundur. Gemini kullanır.")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .padding(.top, 8)
-                        }
+                // Sekme içerikleri
+                TabView(selection: $selectedTab) {
+                    // GENEL AYARLAR SEKMESİ
+                    ScrollView {
+                        genelAyarlarView
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                    }
+                    .tag(0)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        // Klavye gösterimini kapat
+                        isTextFieldFocused = false
                     }
 
-                    Divider()
-
-                    // API ANAHTARLARI
-                    VStack(alignment: .leading, spacing: 24) {
-                        Text("API Anahtarları")
-                            .font(.title3)
-                            .fontWeight(.medium)
-
-                        // ElevenLabs
-                        MinimalTextField(
-                            title: "ElevenLabs API",
-                            text: $elevenLabsKey,
-                            placeholder: "API Anahtarı"
-                        )
-
-                        // Gemini
-                        MinimalTextField(
-                            title: "Gemini API",
-                            text: $geminiKey,
-                            placeholder: "API Anahtarı"
-                        )
-
-                        // OpenAI
-                        MinimalTextField(
-                            title: "OpenAI API",
-                            text: $openAIKey,
-                            placeholder: "API Anahtarı"
-                        )
-
-                        Button {
-                            elevenLabsKey = AppConfig.elevenLabsAPIKey
-                            geminiKey = AppConfig.geminiAPIKey
-                            openAIKey = AppConfig.openAIAPIKey
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred()
-                        } label: {
-                            Text("Varsayılan değerlere sıfırla")
-                                .font(.footnote)
-                                .foregroundColor(.blue)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .trailing)
+                    // SES AYARLARI SEKMESİ
+                    ScrollView {
+                        sesAyarlariView
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                     }
-                    .padding(.bottom, 8)
-
-                    Divider()
-
-                    // SES AYARLARI
-                    VStack(alignment: .leading, spacing: 24) {
-                        Text("Ses Ayarları")
-                            .font(.title3)
-                            .fontWeight(.medium)
-
-                        // Ses Seçimi
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Ses")
-                                .font(.callout)
-                                .foregroundColor(.secondary)
-
-                            if isLoadingVoices {
-                                HStack {
-                                    Spacer()
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle())
-                                    Spacer()
-                                }
-                                .frame(height: 40)
-                            } else if voiceLoadError {
-                                Text("Sesler yüklenemedi")
-                                    .font(.subheadline)
-                                    .foregroundColor(.red)
-                            } else {
-                                Menu {
-                                    // Rachel sesini manuel olarak ekliyoruz
-                                    Button {
-                                        selectedVoiceID = rachelVoice.voice_id
-                                    } label: {
-                                        HStack {
-                                            Text("\(rachelVoice.name) ⭐")
-                                            if selectedVoiceID == rachelVoice.voice_id {
-                                                Image(systemName: "checkmark")
-                                            }
-                                        }
-                                    }
-
-                                    // Diğer sesler
-                                    if !voices.isEmpty {
-                                        Divider()
-                                        ForEach(voices.filter { $0.voice_id != rachelVoice.voice_id }) { voice in
-                                            Button {
-                                                selectedVoiceID = voice.voice_id
-                                            } label: {
-                                                HStack {
-                                                    Text("\(voice.name) \(voice.category == "premade" ? "✓" : "")")
-                                                    if selectedVoiceID == voice.voice_id {
-                                                        Image(systemName: "checkmark")
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                } label: {
-                                    HStack {
-                                        Text(voices.first(where: { $0.voice_id == selectedVoiceID })?.name ?? rachelVoice.name)
-                                            .font(.subheadline)
-                                        Spacer()
-                                        Image(systemName: "chevron.down")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
-                                    .padding(.vertical, 10)
-                                }
-                            }
-                        }
-
-                        // Ses Hızı
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("Hız")
-                                    .font(.callout)
-                                    .foregroundColor(.secondary)
-
-                                Spacer()
-
-                                Text("\(String(format: "%.2f", playbackRate))x")
-                                    .font(.footnote.monospacedDigit())
-                                    .foregroundColor(.secondary)
-                            }
-
-                            HStack(spacing: 12) {
-                                Text("0.75x")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-
-                                Slider(value: $playbackRate, in: 0.75...1.15, step: 0.05)
-
-                                Text("1.15x")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-
-                            Button {
-                                playbackRate = 0.85
-                                let generator = UIImpactFeedbackGenerator(style: .light)
-                                generator.impactOccurred()
-                            } label: {
-                                Text("Normal (0.85x)")
-                                    .font(.caption)
-                                    .foregroundColor(.blue)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
+                    .tag(1)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        // Klavye gösterimini kapat
+                        isTextFieldFocused = false
                     }
-                    .padding(.vertical, 8)
 
-                    Divider()
-
-                    // KAYDET BUTONU
-                    Button {
-                        saveSettings()
-                    } label: {
-                        Text("Kaydet")
-                            .fontWeight(.medium)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                    // API ANAHTARLARI SEKMESİ
+                    ScrollView {
+                        apiAnahtarlariView
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                     }
-                    .padding(.top, 16)
+                    .tag(2)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        // Klavye gösterimini kapat
+                        isTextFieldFocused = false
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+
+                Divider()
+
+                // KAYDET BUTONU
+                Button {
+                    // Klavyeyi kapat
+                    isTextFieldFocused = false
+
+                    saveSettings()
+                } label: {
+                    Text("Kaydet")
+                        .fontWeight(.medium)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 32)
+                .padding(.vertical, 16)
             }
             .navigationTitle("Ayarlar")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
+                        // Klavyeyi kapat
+                        isTextFieldFocused = false
                         dismiss()
                     } label: {
                         Text("İptal")
+                    }
+                }
+
+                ToolbarItem(placement: .keyboard) {
+                    HStack {
+                        Spacer()
+                        Button("Tamam") {
+                            isTextFieldFocused = false
+                        }
                     }
                 }
             }
@@ -292,6 +151,218 @@ struct SettingsView: View {
             .onAppear {
                 loadVoices()
             }
+        }
+    }
+
+    // GENEL AYARLAR SEKMESİ GÖRÜNÜMÜ
+    private var genelAyarlarView: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            Text("Çeviri Servisi")
+                .font(.title3)
+                .fontWeight(.medium)
+
+            Picker("Çeviri Servisi", selection: $translationService) {
+                Text("Gemini AI").tag("gemini")
+                Text("OpenAI").tag("openai")
+            }
+            .pickerStyle(.segmented)
+            .padding(.bottom, 8)
+
+            // Model Stili Seçimi
+            HStack {
+                Text("Model tercihleri geçersiz kılınsın mı?")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                Spacer()
+
+                Toggle("", isOn: $overrideModelStyle)
+            }
+
+            Text("Açık olduğunda, her zaman yukarıda seçtiğiniz servis kullanılır. Kapalı olduğunda, çeviri stili kullanılacak modeli otomatik belirler.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .padding(.bottom, 8)
+
+            if !overrideModelStyle {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Çeviri Stili")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    Picker("Çeviri Stili", selection: $modelStyle) {
+                        Text("Standart Dil").tag("formal")
+                        Text("Günlük Dil").tag("informal")
+                    }
+                    .pickerStyle(.segmented)
+
+                    if modelStyle == "formal" {
+                        Text("Standart dil: Resmi ortamlar ve profesyonel iletişim için uygundur. OpenAI kullanır.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else {
+                        Text("Günlük dil: Arkadaşlar arası konuşma ve informal iletişim için uygundur. Gemini kullanır.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.top, 8)
+            }
+        }
+    }
+
+    // SES AYARLARI SEKMESİ GÖRÜNÜMÜ
+    private var sesAyarlariView: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            Text("Ses Ayarları")
+                .font(.title3)
+                .fontWeight(.medium)
+
+            // Ses Seçimi
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Ses")
+                    .font(.callout)
+                    .foregroundColor(.secondary)
+
+                if isLoadingVoices {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                        Spacer()
+                    }
+                    .frame(height: 40)
+                } else if voiceLoadError {
+                    Text("Sesler yüklenemedi")
+                        .font(.subheadline)
+                        .foregroundColor(.red)
+                } else {
+                    Menu {
+                        // Rachel sesini manuel olarak ekliyoruz
+                        Button {
+                            selectedVoiceID = rachelVoice.voice_id
+                        } label: {
+                            HStack {
+                                Text("\(rachelVoice.name) ⭐")
+                                if selectedVoiceID == rachelVoice.voice_id {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+
+                        // Diğer sesler
+                        if !voices.isEmpty {
+                            Divider()
+                            ForEach(voices.filter { $0.voice_id != rachelVoice.voice_id }) { voice in
+                                Button {
+                                    selectedVoiceID = voice.voice_id
+                                } label: {
+                                    HStack {
+                                        Text("\(voice.name) \(voice.category == "premade" ? "✓" : "")")
+                                        if selectedVoiceID == voice.voice_id {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(voices.first(where: { $0.voice_id == selectedVoiceID })?.name ?? rachelVoice.name)
+                                .font(.subheadline)
+                            Spacer()
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.vertical, 10)
+                    }
+                }
+            }
+
+            // Ses Hızı
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Hız")
+                        .font(.callout)
+                        .foregroundColor(.secondary)
+
+                    Spacer()
+
+                    Text("\(String(format: "%.2f", playbackRate))x")
+                        .font(.footnote.monospacedDigit())
+                        .foregroundColor(.secondary)
+                }
+
+                HStack(spacing: 12) {
+                    Text("0.75x")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+
+                    Slider(value: $playbackRate, in: 0.75...1.15, step: 0.05)
+
+                    Text("1.15x")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+
+                Button {
+                    playbackRate = 0.85
+                    let generator = UIImpactFeedbackGenerator(style: .light)
+                    generator.impactOccurred()
+                } label: {
+                    Text("Normal (0.85x)")
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+    }
+
+    // API ANAHTARLARI SEKMESİ GÖRÜNÜMÜ
+    private var apiAnahtarlariView: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            Text("API Anahtarları")
+                .font(.title3)
+                .fontWeight(.medium)
+
+            // ElevenLabs
+            MinimalTextField(
+                title: "ElevenLabs API",
+                text: $elevenLabsKey,
+                placeholder: "API Anahtarı"
+            )
+            .focused($isTextFieldFocused)
+
+            // Gemini
+            MinimalTextField(
+                title: "Gemini API",
+                text: $geminiKey,
+                placeholder: "API Anahtarı"
+            )
+            .focused($isTextFieldFocused)
+
+            // OpenAI
+            MinimalTextField(
+                title: "OpenAI API",
+                text: $openAIKey,
+                placeholder: "API Anahtarı"
+            )
+            .focused($isTextFieldFocused)
+
+            Button {
+                elevenLabsKey = AppConfig.elevenLabsAPIKey
+                geminiKey = AppConfig.geminiAPIKey
+                openAIKey = AppConfig.openAIAPIKey
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.impactOccurred()
+            } label: {
+                Text("Varsayılan değerlere sıfırla")
+                    .font(.footnote)
+                    .foregroundColor(.blue)
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
     }
 
@@ -353,6 +424,39 @@ struct SettingsView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
             dismiss()
         }
+    }
+}
+
+// Sekme Seçim Görünümü
+struct TabSelectionView: View {
+    let tabs: [String]
+    @Binding var selectedTab: Int
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<tabs.count, id: \.self) { index in
+                Button {
+                    withAnimation {
+                        selectedTab = index
+                    }
+                } label: {
+                    VStack(spacing: 8) {
+                        Text(tabs[index])
+                            .font(.subheadline)
+                            .fontWeight(selectedTab == index ? .semibold : .regular)
+                            .foregroundColor(selectedTab == index ? .primary : .secondary)
+
+                        // Seçili sekmenin altındaki çizgi
+                        Rectangle()
+                            .fill(selectedTab == index ? Color.blue : Color.clear)
+                            .frame(height: 2)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 20)
     }
 }
 

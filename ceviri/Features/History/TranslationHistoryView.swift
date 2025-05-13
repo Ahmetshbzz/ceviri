@@ -41,7 +41,7 @@ struct TranslationHistoryView: View {
                         Label("Sadece Favoriler", systemImage: "star.fill")
                     }
                     .toggleStyle(SwitchToggleStyle(tint: .blue))
-                    .onChange(of: showFavoritesOnly) { newValue in
+                    .onChange(of: showFavoritesOnly) { _, newValue in
                         historyService.showOnlyFavorites(newValue)
                     }
 
